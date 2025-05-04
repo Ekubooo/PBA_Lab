@@ -134,19 +134,19 @@ public class implicit_model : MonoBehaviour
 	{
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Vector3[] X = mesh.vertices;
-		
+		GameObject sphere = GameObject.Find("Sphere");
+
 		//Handle colllision.
-		Vector3 c = sphere.transform.position;
+		Vector3 center = sphere.transform.position;
+		float radius = 2.7f;
 		for(int i = 0; i < X.Length; i++)
 		{
-			if(!Skip_Update(i))
+			if (i == 0 || i == 20) continue;
+			Vector3 d = X[i] - center;
+			if (d.magnitude < radius)
 			{
-				float d = Vector3.Distance(X[i], c);
-				if (d < r)
-				{
-					V[i] = V[i] + 1 / t * (c + r * (X[i] - c) / d - X[i]);
-					X[i] = c + r * (X[i] - c) / d;
-				}
+				V[i] += (center + radius*d.normalized - X[i])/t;
+				X[i] = center + radius*d.normalized;
 			}
 		}
 		mesh.vertices = X;
@@ -157,22 +157,18 @@ public class implicit_model : MonoBehaviour
 		//Momentum and Gravity.
 		for (int i = 0; i < G.Length; i++)
     	{
-			if (!Skip_Update(i))
-			{
-				G[i] = mass * (X[i] - X_hat[i]) / (t * t) - mass * gravity;
-			}
+			G[i] = (mass/(t*t)) * (X[i]-X_hat[i]) - mass*new Vector3(0.0f,-9.8f,0.0f);
     	}
 
 		//Spring Force.
-		for (int e = 0; e < L.Length; e++)
+		for (int e = 0; e < E.Length/2; e++)
 		{
 			int i = E[e * 2 + 0];
 			int j = E[e * 2 + 1];
-			float x = Vector3.Distance(X[i], X[j]);
-			Vector3 f = spring_k * (1 - L[e] / x) * (X[i] - X[j]);
+			Vector3 f = spring_k*(1-L[e] / (X[i]-X[j]).magnitude) * (X[i] - X[j]);
 
-			if (!Skip_Update(i)) G[i] += f;
-			if (!Skip_Update(j)) G[j] -= f;
+			G[i] += f;
+			G[j] -= f;
 		}
 	}
 
@@ -188,46 +184,36 @@ public class implicit_model : MonoBehaviour
 		//Initial Setup.
 		for (int i = 0; i < V.Length; i++)
 		{
-			if(!Skip_Update(i))
-				V[i] *= damping;
+			
 		}
 		for (int i = 0; i < X.Length; i++)
 		{
-			if(!Skip_Update(i))
-			{
-				X_hat[i] = X[i] + V[i]*t;
-				X[i] = X_hat[i];
-			}
+			V[i] *= damping;
+			X[i] = X_hat[i] = X[i] + t*V[i];
 		}
-
+		
+		float omega = 1.0f;
 		for(int k=0; k<32; k++)
 		{
+			if (k == 0)			omega = 1.0f;
+			else if (k == 1)	omega = 2.0f / (2.0f - rho * rho);
+			else			 	omega = 4.0f / (4.0f - rho * rho * omega);
+
 			Get_Gradient(X, X_hat, t, G);
-			
-			if(k == 0)
-				omega = 1.0f;
-			else if(k == 1)
-				omega = 2.0f / (2.0f - rho * rho);
-			else
-				omega = 4.0f / (4.0f - rho * rho * omega);
 
 			//Update X by gradient.
 			for(int i = 0; i < X.Length; i++)
 			{
-				if (!Skip_Update(i))
-				{
-					Vector3 old = X[i];
-					X[i] = omega * (X[i] - 1 / (mass / (t * t) + 4 * spring_k) * G[i]) + (1 - omega) * last_X[i];
-					last_X[i] = old;
-				}
+				if (i == 0 || i == 20) continue;
+
+				Vector3 X_new = omega * (X[i] - 1 / (mass / (t * t) + 4 * spring_k) * G[i]) + (1 - omega) * last_X[i];
+				last_X[i] = X[i];
+				X[i] = X_new;
 			}
 		}
 		for(int i = 0; i < X.Length; i++)
 		{
-			if (!Skip_Update(i))
-			{
-				V[i] += (X[i] - X_hat[i]) / t;
-			}
+			V[i] += (X[i] - X_hat[i]) / t;
 		}
 
 		//Finishing.
