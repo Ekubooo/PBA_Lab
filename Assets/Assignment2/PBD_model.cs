@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PBD_model: MonoBehaviour {
-
-	float 		t= 0.0333f;
-	float		damping= 0.99f;
-	int[] 		E;
-	float[] 	L;
-	Vector3[] 	V;
-
+public class PBD_model: MonoBehaviour 
+{
+	float 		t = 0.0333f;		// delta T
+	float		damping = 0.99f;	// damp force
+	int[] 		E;					// edge index
+	float[] 	L;					// edge Length
+	Vector3[] 	V;					// vertex velocity
 
 	// Use this for initialization
 	void Start () 
@@ -16,28 +15,28 @@ public class PBD_model: MonoBehaviour {
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 
 		//Resize the mesh.
-		int n=21;
+		int n = 21;
 		Vector3[] X  	= new Vector3[n*n];
 		Vector2[] UV 	= new Vector2[n*n];
 		int[] T	= new int[(n-1)*(n-1)*6];
 		for(int j=0; j<n; j++)
-		for(int i=0; i<n; i++)
-		{
-			X[j*n+i] =new Vector3(5-10.0f*i/(n-1), 0, 5-10.0f*j/(n-1));
-			UV[j*n+i]=new Vector3(i/(n-1.0f), j/(n-1.0f));
-		}
+			for(int i=0; i<n; i++)
+			{
+				X[j*n+i] =new Vector3(5-10.0f*i/(n-1), 0, 5-10.0f*j/(n-1));
+				UV[j*n+i]=new Vector3(i/(n-1.0f), j/(n-1.0f));
+			}
 		int t=0;
 		for(int j=0; j<n-1; j++)
-		for(int i=0; i<n-1; i++)	
-		{
-			T[t*6+0]=j*n+i;
-			T[t*6+1]=j*n+i+1;
-			T[t*6+2]=(j+1)*n+i+1;
-			T[t*6+3]=j*n+i;
-			T[t*6+4]=(j+1)*n+i+1;
-			T[t*6+5]=(j+1)*n+i;
-			t++;
-		}
+			for(int i=0; i<n-1; i++)	
+			{
+				T[t*6+0]=j*n+i;
+				T[t*6+1]=j*n+i+1;
+				T[t*6+2]=(j+1)*n+i+1;
+				T[t*6+3]=j*n+i;
+				T[t*6+4]=(j+1)*n+i+1;
+				T[t*6+5]=(j+1)*n+i;
+				t++;
+			}
 		mesh.vertices	= X;
 		mesh.triangles	= T;
 		mesh.uv 		= UV;
@@ -131,8 +130,35 @@ public class PBD_model: MonoBehaviour {
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Vector3[] vertices = mesh.vertices;
 
+		Vector3[] 	Sum_X = new Vector3[vertices.Length];
+		float[] 	Sum_N = new float[vertices.Length];
+		for (int i = 0; i<vertices.Length; i++)
+		{
+			Sum_X[i] = Vector3.zero;
+			Sum_N[i] = 0;
+		}
+		
 		//Apply PBD here.
+		for (int e = 0; e<E.Length / 2; e++)
+		{
+			int vi = E[e*2];
+			int vj = E[e*2 + 1];
+			Vector3 ij_Length = (vertices[vi] - vertices[vj] ).normalized;
+			Vector3 ij_Sum = vertices[vi]+vertices[vj];
+			Sum_X[vi] += 0.5f * (ij_Sum + L[e] * ij_Length);
+			Sum_X[vj] += 0.5f * (ij_Sum - L[e] * ij_Length);
+			Sum_N[vi] += 1;
+			Sum_N[vj] += 1;
+		}
 		//...
+		for (int i = 0; i<vertices.Length; i++)
+		{
+			if(i==0 || i==20)	continue;
+			Vector3 tempV = (0.2f * vertices[i] + Sum_X[i])/(0.2f + Sum_N[i]);
+			// warning: Vilocity update first, Vertex after.
+			V[i] += (tempV - vertices[i]) / t;
+			vertices[i] = tempV;
+		}
 		mesh.vertices = vertices;
 	}
 
@@ -142,7 +168,21 @@ public class PBD_model: MonoBehaviour {
 		Vector3[] X = mesh.vertices;
 		
 		//For every vertex, detect collision and apply impulse if needed.
-		//...
+		GameObject sphere = GameObject.Find("Sphere");
+		Vector3 ObjCenter = sphere.transform.position;
+
+		float radius = 2.7f;
+		for(int i = 0; i<X.Length; i++)
+		{
+			if(i==0 || i==20)	continue;
+			Vector3 dis = transform.TransformPoint(X[i]) - ObjCenter;
+			if (dis.magnitude < radius)
+			{
+				Vector3 tempV = ObjCenter + radius * dis.normalized;
+				V[i] = (tempV - X[i]) / t; 
+				X[i] = tempV;
+			}
+		}
 		mesh.vertices = X;
 	}
 
@@ -156,7 +196,9 @@ public class PBD_model: MonoBehaviour {
 		{
 			if(i==0 || i==20)	continue;
 			//Initial Setup
-			//...
+			V[i] += t * new Vector3(0.0f, -9.8f, 0.0f);
+			V[i] *= damping;
+			X[i] += t * V[i];
 		}
 		mesh.vertices = X;
 
@@ -166,9 +208,6 @@ public class PBD_model: MonoBehaviour {
 		Collision_Handling ();
 
 		mesh.RecalculateNormals ();
-
 	}
-
-
 }
 

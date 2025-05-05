@@ -182,10 +182,6 @@ public class implicit_model : MonoBehaviour
 		Vector3[] G 		= new Vector3[X.Length];
 
 		//Initial Setup.
-		for (int i = 0; i < V.Length; i++)
-		{
-			
-		}
 		for (int i = 0; i < X.Length; i++)
 		{
 			V[i] *= damping;
@@ -217,7 +213,6 @@ public class implicit_model : MonoBehaviour
 		}
 
 		//Finishing.
-		
 		mesh.vertices = X;
 
 		Collision_Handling ();
