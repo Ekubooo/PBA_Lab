@@ -186,7 +186,7 @@ public class SVD
 	}
 
 
-	void sortSingularValues(// matrix that we want to decompose
+	void sortSingularValues( // matrix that we want to decompose
 	                            ref float b11, ref float b12, ref float b13,
 	                            ref float b21, ref float b22, ref float b23,
 	                            ref float b31, ref float b32, ref float b33,
