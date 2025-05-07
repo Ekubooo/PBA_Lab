@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 172668226}
   - component: {fileID: 172668227}
   - component: {fileID: 172668228}
+  - component: {fileID: 172668229}
   m_Layer: 0
   m_Name: House
   m_TagString: Untagged
@@ -238,7 +239,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 172668221}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 484a865385b854effb23c94d2c294cb8, type: 3}
   m_Name: 
@@ -262,9 +263,21 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 172668221}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 376fd31cbc5033044a169c684a2cdcac, type: 3}
+  m_Script: {fileID: 11500000, guid: 736553268e87f804e802a2103cd797c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &172668229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 172668221}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7d6c5ca7c6dc584c8c5c414093ab1be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &705507993
