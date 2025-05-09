@@ -271,9 +271,12 @@ public class FVM_Extra : MonoBehaviour
             lambda[1] = S[1, 1];
             lambda[2] = S[2, 2];
             float Ic = lambda[0] * lambda[0] + lambda[1] * lambda[1] + lambda[2] * lambda[2];
-            float dW0 = (0.5f * stiffness_0 * (Ic - 3) + 0.5f * stiffness_1 * (lambda[1] * lambda[1] + lambda[2] * lambda[2] - 2)) * lambda[0];
-            float dW1 = (0.5f * stiffness_0 * (Ic - 3) + 0.5f * stiffness_1 * (lambda[0] * lambda[0] + lambda[2] * lambda[2] - 2)) * lambda[1];
-            float dW2 = (0.5f * stiffness_0 * (Ic - 3) + 0.5f * stiffness_1 * (lambda[0] * lambda[0] + lambda[1] * lambda[1] - 2)) * lambda[2];
+            float priviousPara = 0.5f;
+            float Para2nd = 0.125f;
+            float dW0 = (Para2nd * stiffness_0 * (Ic - 3) + Para2nd * stiffness_1 * (lambda[1] * lambda[1] + lambda[2] * lambda[2] - 2)) * lambda[0];
+            float dW1 = (Para2nd * stiffness_0 * (Ic - 3) + Para2nd * stiffness_1 * (lambda[0] * lambda[0] + lambda[2] * lambda[2] - 2)) * lambda[1];
+            float dW2 = (Para2nd * stiffness_0 * (Ic - 3) + Para2nd * stiffness_1 * (lambda[0] * lambda[0] + lambda[1] * lambda[1] - 2)) * lambda[2];
+            // float dW2 = (0.5f * stiffness_0 * (Ic - 3) + 0.5f * stiffness_1 * (lambda[0] * lambda[0] + lambda[1] * lambda[1] - 2)) * lambda[2];
 
             Matrix4x4 W = Matrix4x4.identity;
             W[0, 0] = dW0;
