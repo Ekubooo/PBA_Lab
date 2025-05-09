@@ -27,10 +27,10 @@ public class Camera_Motion : MonoBehaviour
 			{
 				float h;
 
-				h = 5.0f * Input.GetAxis("Mouse Y");
+				h = 1.5f * Input.GetAxis("Mouse Y");
 				transform.Rotate(h, 0, 0);
 
-				h = 5.0f * Input.GetAxis("Mouse X");
+				h = 1.5f * Input.GetAxis("Mouse X");
 				Camera.main.transform.RotateAround(new Vector3(0, 0, 0), Vector3.up, h);
 			}
 		}
