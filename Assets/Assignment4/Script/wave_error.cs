@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class wave_motion : MonoBehaviour 
+public class wave_error : MonoBehaviour 
 {
 	int size 		= 100;
 	float rate 		= 0.005f;
@@ -139,43 +139,57 @@ public class wave_motion : MonoBehaviour
 		}
 	}
 
-	void coupling1st (string GameObj, ref float[,] old_h, ref float[,] h, ref float [,] new_h)
-	{
-		// -------------------------------------------------------------
-		// Step 2: Block->Water coupling		// ????????
-		// TODO: for block 1, calculate low_h.
-		GameObject CubeA = GameObject.Find(GameObj);
+	void Shallow_Wave(float[,] old_h, float[,] h, float [,] new_h)
+	{		
+		//Step 1:
+		// TODO: Compute new_h based on the shallow wave model.
+		// Why size*size instead of 3*3 ???
+		float sumH = 0.0f;
+		for(int i = 0; i < size; i++)
+			for(int j = 0; j < size; j++)
+			{	
+				if(i!=0 && j!=0 && i!=size-1 && j!=size-1)
+				{
+					sumH = 0.0f;
+					sumH = h[i+1,j] + h[i-1,j] + h[i,j+1] + h[i,j-1] - 4*h[i,j];
+					new_h[i,j] = h[i,j] + (h[i,j] - old_h[i,j]) * damping + sumH * rate;
+				}
+			}
+		
+		//Step 2: Block->Water coupling		// ????????
+		//TODO: for block 1, calculate low_h.
+		GameObject CubeA = GameObject.Find("Block");
 		Vector3 CubeA_pos = CubeA.transform.position;
 		Mesh CubeA_mesh = CubeA.GetComponent<MeshFilter>().mesh;
-		int lower_i = (int)((CubeA_pos.x + 5.0f) * 10) - 5;
-		int upper_i = (int)((CubeA_pos.x + 5.0f) * 10) + 5;
-		int lower_j = (int)((CubeA_pos.z + 5.0f) * 10) - 5;
-		int upper_j = (int)((CubeA_pos.z + 5.0f) * 10) + 5;
+		int lower_i = (int)((CubeA_pos.x + 5.0f) * 10) - 3;
+		int upper_i = (int)((CubeA_pos.x + 5.0f) * 10) + 3;
+		int lower_j = (int)((CubeA_pos.z + 5.0f) * 10) - 3;
+		int upper_j = (int)((CubeA_pos.z + 5.0f) * 10) + 3;
 		Bounds bounds = CubeA_mesh.bounds;
-		Vector3 p1 = Vector3.zero;
-		Vector3 q1 = Vector3.zero;
+		Vector3 p = Vector3.zero;
+		Vector3 q = Vector3.zero;
 		for (int i = lower_i - 3; i <= upper_i + 3; i++)
             for (int j = lower_j - 3; j <= upper_j + 3; j++)
 				if (i >= 0 && j >= 0 && i < size && j < size)
 				{
-					p1 = Vector3.zero;
-					q1 = Vector3.zero;
-					p1 = CubeA.transform.InverseTransformPoint
+					p = Vector3.zero;
+					q = Vector3.zero;
+					p = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -11, j*0.1f - size*0.05f));
-					q1 = CubeA.transform.InverseTransformPoint
+					q = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
 
-					Ray ray = new Ray(p1, q1 - p1);
+					Ray ray = new Ray(p, q - p);
 					float dist = 99999;
 					bounds.IntersectRay(ray, out dist);
 					low_h[i, j] = -11 + dist;	//cube_p.y-0.5f;
 				}
 
-		// TODO: then set up b and cg_mask for conjugate gradient.
+		//TODO: then set up b and cg_mask for conjugate gradient.
 		for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
             {
-				if (low_h[i, j] >= h[i, j])
+				if (low_h[i, j] > h[i, j])
 				{
 					b[i, j] = 0;
 					vh[i, j] = 0;
@@ -188,64 +202,44 @@ public class wave_motion : MonoBehaviour
 				}
             }
             	
-		// TODO: Solve the Poisson equation to obtain vh (virtual height).
+		//TODO: Solve the Poisson equation to obtain vh (virtual height).
 		Conjugate_Gradient(cg_mask, b, vh, lower_i - 1, upper_i + 1, lower_j - 1, upper_j + 1);
-		// -------------------------------------------------------------
-	}
-
-	void Shallow_Wave(float[,] old_h, float[,] h, float [,] new_h)
-	{		
-		// Step 1:
-		// TODO: Compute new_h based on the shallow wave model.
-		// Why size*size instead of 3*3 ???
-		float sumH = 0.0f;
-		for(int i = 0; i < size; i++)
-			for(int j = 0; j < size; j++)
-				if(i!=0 && j!=0 && i!=size-1 && j!=size-1)
-				{
-					sumH = 0.0f;
-					sumH = h[i+1,j] + h[i-1,j] + h[i,j+1] + h[i,j-1] - 4*h[i,j];
-					new_h[i,j] = h[i,j] + (h[i,j] - old_h[i,j]) * damping + sumH * rate;
-				}
-			
-		// -------------------------------------------------------------
-		// Step 2: Block->Water coupling		// ????????
-		//TODO: for block 1, calculate low_h.
+		
+		//TODO: for block 2, calculate low_h.
 		//TODO: then set up b and cg_mask for conjugate gradient.
 		//TODO: Solve the Poisson equation to obtain vh (virtual height).
-		coupling1st("Block", ref old_h, ref h, ref new_h);
-		coupling1st("Cube" , ref old_h, ref h, ref new_h);
-
-		// -------------------------------------------------------------
-		// TODO: Diminish vh.
+		//TODO: Diminish vh.
 		for(int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
 				if (cg_mask[i, j]) vh[i, j] *= gamma;
 
-		// TODO: Update new_h by vh.
+		//TODO: Update new_h by vh.
 		float sumVH = 0.0f;
 		for(int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
+			{	
 				if(i!=0 && j!=0 && i!=size-1 && j!=size-1)
 				{
 					sumVH = 0.0f;
 					sumVH = vh[i+1,j] + vh[i-1,j] + vh[i,j+1] + vh[i,j-1] - 4*vh[i,j];
 					new_h[i,j] += sumVH * rate;
 					// new_h[i,j] += vh[i,j] + (vh[i,j] - old_h[i,j]) * damping + sumVH * rate;
-				} 
-		
-		// Step 3
-		// TODO: old_h <- h; h <- new_h;
+				}
+				// if(i > 0) new_h[i, j] += rate * (vh[i - 1, j] - vh[i, j]);
+				// if(i < size - 1) new_h[i, j] += rate * (vh[i + 1, j] - vh[i, j]);
+				// if(j > 0) new_h[i, j] += rate * (vh[i, j - 1] - vh[i, j]);
+				// if(j < size - 1) new_h[i, j] += rate * (vh[i, j + 1] - vh[i, j]);
+			}
+		//Step 3
+		//TODO: old_h <- h; h <- new_h;
 		for(int i = 0; i < size; ++i)
 			for(int j = 0; j < size; ++j)
 			{
-				old_h[i,j] = h[i,j];
 				h[i,j] = new_h[i,j];
+				old_h[i,j] = h[i,j];
 			}
-		
-		// Step 4: Water->Block coupling.
-		// unfinish
-		// More TODO here.
+		//Step 4: Water->Block coupling.
+		//More TODO here.
 	}
 	
 	// Update is called once per frame
@@ -268,7 +262,7 @@ public class wave_motion : MonoBehaviour
 			// TODO: Add random water.
 			int i = Random.Range(1, size-1);
 			int j = Random.Range(1, size-1);
-			float r = Random.Range(0.1f, 0.25f);
+			float r = Random.Range(0.3f, 0.5f);
 			h[i,j] += 9 * r;
 
 			for(int a = 0; a < 3; a++)
@@ -277,7 +271,7 @@ public class wave_motion : MonoBehaviour
 					h[i-1+a, j-1+b] -= r;
 				}
 		}
-	
+
 		for(int l=0; l<8; l++)
 		{
 			Shallow_Wave(old_h, h, new_h);
