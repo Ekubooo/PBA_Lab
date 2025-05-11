@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections;
 
-public class wave_motion : MonoBehaviour 
+public class wave_highR : MonoBehaviour 
 {
-	int size 		= 100;
-	float rate 		= 0.005f;
-	float gamma		= 0.004f;
-	float damping 	= 0.996f;	// Voscosity 
+	int size 		= 200;
+	float rate 		= 0.01f;
+	float gamma		= 0.005f;
+	float damping 	= 0.975f;	// Voscosity 
 	float[,] 	old_h;
 	float[,]	low_h;
 	float[,]	vh;
@@ -21,21 +21,20 @@ public class wave_motion : MonoBehaviour
 	Vector3 	cube_v = Vector3.zero;
 	Vector3 	cube_w = Vector3.zero;
 
-
 	// Use this for initialization
 	void Start () 
 	{
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		mesh.Clear ();
 
-		Vector3[] X=new Vector3[size*size];
+		Vector3[] X = new Vector3[size*size];
 
 		for (int i=0; i<size; i++)
 			for (int j=0; j<size; j++) 
 			{
-				X[i*size+j].x=i*0.1f-size*0.05f;
-				X[i*size+j].y=0;
-				X[i*size+j].z=j*0.1f-size*0.05f;
+				X[i*size+j].x = i*0.05f-size*0.025f;
+				X[i*size+j].y = 0;
+				X[i*size+j].z = j*0.05f-size*0.025f;
 			}
 
 		int[] T = new int[(size - 1) * (size - 1) * 6];
@@ -43,12 +42,12 @@ public class wave_motion : MonoBehaviour
 		for (int i=0; i<size-1; i++)
 			for (int j=0; j<size-1; j++)
 			{
-				T[index*6+0]=(i+0)*size+(j+0);
-				T[index*6+1]=(i+0)*size+(j+1);
-				T[index*6+2]=(i+1)*size+(j+1);
-				T[index*6+3]=(i+0)*size+(j+0);
-				T[index*6+4]=(i+1)*size+(j+1);
-				T[index*6+5]=(i+1)*size+(j+0);
+				T[index*6+0] = (i+0)*size + (j+0);
+				T[index*6+1] = (i+0)*size + (j+1);
+				T[index*6+2] = (i+1)*size + (j+1);
+				T[index*6+3] = (i+0)*size + (j+0);
+				T[index*6+4] = (i+1)*size + (j+1);
+				T[index*6+5] = (i+1)*size + (j+0);
 				index++;
 			}
 		mesh.vertices  = X;
@@ -68,9 +67,9 @@ public class wave_motion : MonoBehaviour
 		for (int i=0; i<size; i++)
 			for (int j=0; j<size; j++) 
 			{
-				low_h[i,j]=99999;
-				old_h[i,j]=0;
-				vh[i,j]=0;
+				low_h[i,j] = 99999;
+				old_h[i,j] = 0;
+				vh[i,j] = 0;
 			}
 	}
 
@@ -90,12 +89,12 @@ public class wave_motion : MonoBehaviour
 
 	float Dot(bool[,] mask, float[,] x, float[,] y, int li, int ui, int lj, int uj)
 	{
-		float ret=0;
+		float ret = 0;
 		for(int i=li; i<=ui; i++)
 			for(int j=lj; j<=uj; j++)
 				if(i>=0 && j>=0 && i<size && j<size && mask[i,j])
 				{
-					ret+=x[i,j]*y[i,j];
+					ret += x[i,j]*y[i,j];
 				}
 		return ret;
 	}
@@ -149,13 +148,13 @@ public class wave_motion : MonoBehaviour
 		Mesh CubeA_mesh = CubeA.GetComponent<MeshFilter>().mesh;
 
 			// the "AABB" of the Mask, not the real AABB
-			// world_pos to water surface_pos(100 * 100); +-3 is for visible effect
-			// cube width in world_pos: 1; turn into water_surface width: 10
-		int visibleValue = 6;
-		int leftBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) - visibleValue;
-		int rightBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) + visibleValue;
-		int lowerBoundry 	= (int)((CubeA_pos.z + 5.0f) * 10) - visibleValue;
-		int upperBoundry 	= (int)((CubeA_pos.z + 5.0f) * 10) + visibleValue;
+			// world_pos to water surface_pos(200 * 200); +-30 is for visible effect
+			// cube width in world_pos: 1; turn into water_surface width: 20
+		int visibleValue 	= 12;
+		int leftBoundry 	= (int)((CubeA_pos.x + 5.0f) * 20) - visibleValue;
+		int rightBoundry 	= (int)((CubeA_pos.x + 5.0f) * 20) + visibleValue;
+		int lowerBoundry 	= (int)((CubeA_pos.z + 5.0f) * 20) - visibleValue;
+		int upperBoundry 	= (int)((CubeA_pos.z + 5.0f) * 20) + visibleValue;
 
 		Bounds bounds = CubeA_mesh.bounds;
 		Vector3 p = Vector3.zero;
@@ -168,14 +167,15 @@ public class wave_motion : MonoBehaviour
 					p = Vector3.zero;
 					q = Vector3.zero;
 					p = CubeA.transform.InverseTransformPoint
-						(new Vector3(i*0.1f - size*0.05f, -11, j*0.1f - size*0.05f));
+						(new Vector3(i*0.05f - size*0.025f, -10, j*0.05f - size*0.025f));
 					q = CubeA.transform.InverseTransformPoint
-						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
+						(new Vector3(i*0.05f - size*0.025f, -9 , j*0.05f - size*0.025f));
 
 					Ray ray = new Ray(p, q - p);
 					float dist = 99999;
 					bounds.IntersectRay(ray, out dist);
-					low_h[i, j] = -11 + dist;	//cube_p.y-0.5f;
+					// what is this for? Thinking...
+					low_h[i, j] = -10 + dist;	//cube_p.y-0.5f;	
 				}
 
 		// TODO: then set up b and cg_mask for conjugate gradient.

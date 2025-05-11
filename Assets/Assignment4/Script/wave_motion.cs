@@ -28,14 +28,14 @@ public class wave_motion : MonoBehaviour
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		mesh.Clear ();
 
-		Vector3[] X=new Vector3[size*size];
+		Vector3[] X = new Vector3[size*size];
 
 		for (int i=0; i<size; i++)
 			for (int j=0; j<size; j++) 
 			{
-				X[i*size+j].x=i*0.1f-size*0.05f;
-				X[i*size+j].y=0;
-				X[i*size+j].z=j*0.1f-size*0.05f;
+				X[i*size+j].x = i*0.1f-size*0.05f;
+				X[i*size+j].y = 0;
+				X[i*size+j].z = j*0.1f-size*0.05f;
 			}
 
 		int[] T = new int[(size - 1) * (size - 1) * 6];
@@ -43,12 +43,12 @@ public class wave_motion : MonoBehaviour
 		for (int i=0; i<size-1; i++)
 			for (int j=0; j<size-1; j++)
 			{
-				T[index*6+0]=(i+0)*size+(j+0);
-				T[index*6+1]=(i+0)*size+(j+1);
-				T[index*6+2]=(i+1)*size+(j+1);
-				T[index*6+3]=(i+0)*size+(j+0);
-				T[index*6+4]=(i+1)*size+(j+1);
-				T[index*6+5]=(i+1)*size+(j+0);
+				T[index*6+0] = (i+0)*size + (j+0);
+				T[index*6+1] = (i+0)*size + (j+1);
+				T[index*6+2] = (i+1)*size + (j+1);
+				T[index*6+3] = (i+0)*size + (j+0);
+				T[index*6+4] = (i+1)*size + (j+1);
+				T[index*6+5] = (i+1)*size + (j+0);
 				index++;
 			}
 		mesh.vertices  = X;
@@ -151,7 +151,7 @@ public class wave_motion : MonoBehaviour
 			// the "AABB" of the Mask, not the real AABB
 			// world_pos to water surface_pos(100 * 100); +-3 is for visible effect
 			// cube width in world_pos: 1; turn into water_surface width: 10
-		int visibleValue = 6;
+		int visibleValue 	= 6;
 		int leftBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) - visibleValue;
 		int rightBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) + visibleValue;
 		int lowerBoundry 	= (int)((CubeA_pos.z + 5.0f) * 10) - visibleValue;
@@ -168,14 +168,14 @@ public class wave_motion : MonoBehaviour
 					p = Vector3.zero;
 					q = Vector3.zero;
 					p = CubeA.transform.InverseTransformPoint
-						(new Vector3(i*0.1f - size*0.05f, -11, j*0.1f - size*0.05f));
-					q = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
+					q = CubeA.transform.InverseTransformPoint
+						(new Vector3(i*0.1f - size*0.05f, -9, j*0.1f - size*0.05f));
 
 					Ray ray = new Ray(p, q - p);
 					float dist = 99999;
 					bounds.IntersectRay(ray, out dist);
-					low_h[i, j] = -11 + dist;	//cube_p.y-0.5f;
+					low_h[i, j] = -10 + dist;	//cube_p.y-0.5f;
 				}
 
 		// TODO: then set up b and cg_mask for conjugate gradient.
@@ -276,7 +276,7 @@ public class wave_motion : MonoBehaviour
 			// TODO: Add random water.
 			int i = Random.Range(1, size-1);
 			int j = Random.Range(1, size-1);
-			float r = Random.Range(0.01f, 0.05f);
+			float r = Random.Range(0.02f, 0.05f);
 			h[i,j] += 9 * r;
 
 			for(int a = 0; a < 3; a++)
@@ -286,7 +286,7 @@ public class wave_motion : MonoBehaviour
 				}
 		}
 	
-		for(int l=0; l<2; l++)
+		for(int l=0; l<4; l++)
 		{
 			Shallow_Wave(old_h, h, new_h);
 		}
