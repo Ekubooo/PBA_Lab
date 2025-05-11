@@ -147,25 +147,32 @@ public class wave_motion : MonoBehaviour
 		GameObject CubeA = GameObject.Find(GameObj);
 		Vector3 CubeA_pos = CubeA.transform.position;
 		Mesh CubeA_mesh = CubeA.GetComponent<MeshFilter>().mesh;
-		int lower_i = (int)((CubeA_pos.x + 5.0f) * 10) - 5;
-		int upper_i = (int)((CubeA_pos.x + 5.0f) * 10) + 5;
-		int lower_j = (int)((CubeA_pos.z + 5.0f) * 10) - 5;
-		int upper_j = (int)((CubeA_pos.z + 5.0f) * 10) + 5;
+
+			// the "AABB" of the Mask, not the real AABB
+			// world_pos to water surface_pos(100 * 100); +-3 is for visible effect
+			// cube width in world_pos: 1; turn into water_surface width: 10
+		int visibleValue = 6;
+		int leftBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) - visibleValue;
+		int rightBoundry 	= (int)((CubeA_pos.x + 5.0f) * 10) + visibleValue;
+		int lowerBoundry 	= (int)((CubeA_pos.z + 5.0f) * 10) - visibleValue;
+		int upperBoundry 	= (int)((CubeA_pos.z + 5.0f) * 10) + visibleValue;
+
 		Bounds bounds = CubeA_mesh.bounds;
-		Vector3 p1 = Vector3.zero;
-		Vector3 q1 = Vector3.zero;
-		for (int i = lower_i - 3; i <= upper_i + 3; i++)
-            for (int j = lower_j - 3; j <= upper_j + 3; j++)
+		Vector3 p = Vector3.zero;
+		Vector3 q = Vector3.zero;
+		// Traverse the mask
+		for (int i = leftBoundry - visibleValue; i <= rightBoundry + visibleValue; i++)
+            for (int j = lowerBoundry - visibleValue; j <= upperBoundry + visibleValue; j++)
 				if (i >= 0 && j >= 0 && i < size && j < size)
 				{
-					p1 = Vector3.zero;
-					q1 = Vector3.zero;
-					p1 = CubeA.transform.InverseTransformPoint
+					p = Vector3.zero;
+					q = Vector3.zero;
+					p = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -11, j*0.1f - size*0.05f));
-					q1 = CubeA.transform.InverseTransformPoint
+					q = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
 
-					Ray ray = new Ray(p1, q1 - p1);
+					Ray ray = new Ray(p, q - p);
 					float dist = 99999;
 					bounds.IntersectRay(ray, out dist);
 					low_h[i, j] = -11 + dist;	//cube_p.y-0.5f;
@@ -189,7 +196,7 @@ public class wave_motion : MonoBehaviour
             }
             	
 		// TODO: Solve the Poisson equation to obtain vh (virtual height).
-		Conjugate_Gradient(cg_mask, b, vh, lower_i - 1, upper_i + 1, lower_j - 1, upper_j + 1);
+		Conjugate_Gradient(cg_mask, b, vh, leftBoundry - 1, rightBoundry + 1, lowerBoundry - 1, upperBoundry + 1);
 		// -------------------------------------------------------------
 	}
 
@@ -239,6 +246,7 @@ public class wave_motion : MonoBehaviour
 		for(int i = 0; i < size; ++i)
 			for(int j = 0; j < size; ++j)
 			{
+				// h[i,j] = new_h[i,j]; 	// error if let h[i,j] update first
 				old_h[i,j] = h[i,j];
 				h[i,j] = new_h[i,j];
 			}
@@ -268,7 +276,7 @@ public class wave_motion : MonoBehaviour
 			// TODO: Add random water.
 			int i = Random.Range(1, size-1);
 			int j = Random.Range(1, size-1);
-			float r = Random.Range(0.1f, 0.25f);
+			float r = Random.Range(0.01f, 0.05f);
 			h[i,j] += 9 * r;
 
 			for(int a = 0; a < 3; a++)
@@ -278,10 +286,11 @@ public class wave_motion : MonoBehaviour
 				}
 		}
 	
-		for(int l=0; l<8; l++)
+		for(int l=0; l<2; l++)
 		{
 			Shallow_Wave(old_h, h, new_h);
 		}
+		// Shallow_Wave(old_h, h, new_h);
 
 		//TODO: Store h back into X.y and recalculate normal.
 		for(int i = 0; i < size; ++i)
