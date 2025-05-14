@@ -31,24 +31,24 @@ public class Rigid_Bunny : MonoBehaviour
         mesh = GetComponent<MeshFilter>().mesh;
         vertices = mesh.vertices;
 
-        float m=1;
-		mass=0;
+        float m = 1;
+		mass = 0;
 		for (int i=0; i<vertices.Length; i++) 
 		{
 			mass += m;
-			float diag=m*vertices[i].sqrMagnitude;
-			I_ref[0, 0]+=diag;
-			I_ref[1, 1]+=diag;
-			I_ref[2, 2]+=diag;
-			I_ref[0, 0]-=m*vertices[i][0]*vertices[i][0];
-			I_ref[0, 1]-=m*vertices[i][0]*vertices[i][1];
-			I_ref[0, 2]-=m*vertices[i][0]*vertices[i][2];
-			I_ref[1, 0]-=m*vertices[i][1]*vertices[i][0];
-			I_ref[1, 1]-=m*vertices[i][1]*vertices[i][1];
-			I_ref[1, 2]-=m*vertices[i][1]*vertices[i][2];
-			I_ref[2, 0]-=m*vertices[i][2]*vertices[i][0];
-			I_ref[2, 1]-=m*vertices[i][2]*vertices[i][1];
-			I_ref[2, 2]-=m*vertices[i][2]*vertices[i][2];
+			float diag = m * vertices[i].sqrMagnitude;
+			I_ref[0, 0] += diag;
+			I_ref[1, 1] += diag;
+			I_ref[2, 2] += diag;
+			I_ref[0, 0] -= m * vertices[i][0] * vertices[i][0];
+			I_ref[0, 1] -= m * vertices[i][0] * vertices[i][1];
+			I_ref[0, 2] -= m * vertices[i][0] * vertices[i][2];
+			I_ref[1, 0] -= m * vertices[i][1] * vertices[i][0];
+			I_ref[1, 1] -= m * vertices[i][1] * vertices[i][1];
+			I_ref[1, 2] -= m * vertices[i][1] * vertices[i][2];
+			I_ref[2, 0] -= m * vertices[i][2] * vertices[i][0];
+			I_ref[2, 1] -= m * vertices[i][2] * vertices[i][1];
+			I_ref[2, 2] -= m * vertices[i][2] * vertices[i][2];
 		}
 		I_ref [3, 3] = 1;
 	}
@@ -162,7 +162,7 @@ public class Rigid_Bunny : MonoBehaviour
 		if(Input.GetKey("l"))
 		{
 			v = new Vector3 (5, 2, 0);
-			launched=true;
+			launched = true;
 		}
 
 		if (launched)
