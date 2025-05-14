@@ -192,11 +192,16 @@ public class Rigid_Bunny_by_Shape_Matching : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if(Input.GetKey("r"))
+		if(Input.GetKey("f"))
 		{
 			for(int i=0;i<X.Length; i++)
 				X[i] = RePos;
 			// restitution = 0.5f;
+			launched = false;
+		}
+		if(Input.GetKey("r"))
+		{
+			Start();
 			launched = false;
 		}
 		if(Input.GetKey("l"))
