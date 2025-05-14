@@ -9,7 +9,7 @@ public class Rigid_Bunny_by_Shape_Matching : MonoBehaviour
 	Vector3[] Q;
 	Vector3[] V;
 	Matrix4x4 QQt = Matrix4x4.zero;
-
+	Vector3 RePos = new Vector3 (0, 0.6f, 0);
 
     // Start is called before the first frame update
     void Start()
@@ -192,42 +192,61 @@ public class Rigid_Bunny_by_Shape_Matching : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-  		float dt = 0.015f;
-
-        for(int i=0; i<V.Length; i++)
-        {
-        	V[i]*=0.999f;
-        	V[i]+=new Vector3(0, -dt*9.8f, 0);
-        	X[i]+=dt*V[i];
-        }
-
-		Projection(1/dt);
-
-        //Shape Matching (translation)
-        Vector3 c=new Vector3(0.0f, 0.0f, 0.0f);
-		for(int i=0; i<X.Length; i++)
-			c+=X[i]-Q[i];
-		c=c/Q.Length;
-		
-		//Shape Matching (rotation)
-		Matrix4x4 PQt = Matrix4x4.zero;
-
-		for(int i=0; i<X.Length; i++)
+		if(Input.GetKey("r"))
 		{
-			PQt[0, 0]+=(X[i][0]-c[0])*Q[i][0];
-			PQt[0, 1]+=(X[i][0]-c[0])*Q[i][1];
-			PQt[0, 2]+=(X[i][0]-c[0])*Q[i][2];
-			PQt[1, 0]+=(X[i][1]-c[1])*Q[i][0];
-			PQt[1, 1]+=(X[i][1]-c[1])*Q[i][1];
-			PQt[1, 2]+=(X[i][1]-c[1])*Q[i][2];
-			PQt[2, 0]+=(X[i][2]-c[2])*Q[i][0];
-			PQt[2, 1]+=(X[i][2]-c[2])*Q[i][1];
-			PQt[2, 2]+=(X[i][2]-c[2])*Q[i][2];
+			for(int i=0;i<X.Length; i++)
+				X[i] = RePos;
+			// restitution = 0.5f;
+			launched = false;
 		}
-		PQt[3, 3]=1;
+		if(Input.GetKey("l"))
+		{
+			// V[] = new Vector3 (5, 2, 0);
+			launched = true;
+		}
+  		float dt = 0.015f;
+		if (launched)
+		{
+			for(int i=0; i<V.Length; i++)
+			{
+				V[i]*=0.999f;
+				V[i]+=new Vector3(0, -dt*9.8f, 0);
+				X[i]+=dt*V[i];
+			}
 
-		Matrix4x4 R=Get_Rotation(PQt*QQt.inverse);
+			Projection(1/dt);
 
-		Update_Body(c, R, 1/dt);
+			//Shape Matching (translation)
+			Vector3 c=new Vector3(0.0f, 0.0f, 0.0f);
+			for(int i=0; i<X.Length; i++)
+				c+=X[i]-Q[i];
+			c=c/Q.Length;
+			
+			//Shape Matching (rotation)
+			Matrix4x4 PQt = Matrix4x4.zero;
+			/* 
+			for(int i=0; i<X.Length; i++)
+			{
+				PQt[0, 0]+=(X[i][0]-c[0])*Q[i][0];
+				PQt[0, 1]+=(X[i][0]-c[0])*Q[i][1];
+				PQt[0, 2]+=(X[i][0]-c[0])*Q[i][2];
+				PQt[1, 0]+=(X[i][1]-c[1])*Q[i][0];
+				PQt[1, 1]+=(X[i][1]-c[1])*Q[i][1];
+				PQt[1, 2]+=(X[i][1]-c[1])*Q[i][2];
+				PQt[2, 0]+=(X[i][2]-c[2])*Q[i][0];
+				PQt[2, 1]+=(X[i][2]-c[2])*Q[i][1];
+				PQt[2, 2]+=(X[i][2]-c[2])*Q[i][2];
+			}
+			 */
+			for(int i=0; i<X.Length; i++)
+			for(int j=0; j<3; j++)
+			for(int k=0; k<3; k++)
+				PQt[j,k] += (X[i][j] - c[j]) * Q[i][k];
+			PQt[3, 3]=1;
+
+			Matrix4x4 R=Get_Rotation(PQt*QQt.inverse);
+
+			Update_Body(c, R, 1/dt);
+		}
     }
 }

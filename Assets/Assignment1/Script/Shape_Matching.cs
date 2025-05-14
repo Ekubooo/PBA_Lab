@@ -155,29 +155,50 @@ public class Shape_Matching : MonoBehaviour
 		mesh.vertices=X;
    	}
 
-	void Collision(float inv_dt)
+	void Projection(float inv_dt)
 	{
 		for(int i=0; i<X.Length; i++)
 		{
-			Vector3 new_X = X[i];
-			if(V[i][1] < 0.1f)
+			Vector3 new_x=X[i];
+			if(X[i][1]<0.02f)
 			{
-				new_X[1] = 0.1f;
-				if (V[i][1] < 0)
+				new_x[1]=0.02f;
+
+				if(V[i][1]<0)
 				{
-					V[i][1] *= -0.5f;
-					float a = Mathf.Max(1-2.0f*(1+0.5f)*
-						Mathf.Abs(V[i][1]) / Mathf.Sqrt(V[i][0]));
-					V[i][0] *= a;
-					V[i][2] *= a;
+					V[i][1]=-V[i][1]*0.5f;
+
+					float a=1-2.0f*(1+0.5f)*Mathf.Abs(V[i][1])/Mathf.Sqrt(V[i][0]*V[i][0]+V[i][2]*V[i][2]);
+					if(a<0)	a=0;
+					V[i][0]=V[i][0]*0;
+					V[i][2]=V[i][2]*0;
 				}
 			}
+			if(X[i][0]>2.0f)
+			{
+				new_x[0]=2.0f;
+				if(V[i][0]>0)
+				{
+					V[i][0]=-V[i][0]*0.5f;
+
+					float a=1-2.0f*(1+0.5f)*Mathf.Abs(V[i][0])/Mathf.Sqrt(V[i][1]*V[i][1]+V[i][2]*V[i][2]);
+					if(a<0)	a=0;
+					V[i][1]=V[i][1]*0;
+					V[i][2]=V[i][2]*0;
+				}
+			}
+			X[i]=new_x;
 		}
 	}
 
     // Update is called once per frame
     void Update()
     {
+		if(Input.GetKey("r"))
+		{
+			Start();
+			launched = false;
+		}
   		//Step 1: run a simple particle system.
         for(int i=0; i<V.Length; i++)
         {
@@ -187,7 +208,7 @@ public class Shape_Matching : MonoBehaviour
         }
 
         //Step 2: Perform simple particle collision.
-		Collision(1/dt);
+		Projection(1/dt);
 
 		// Step 3: Use shape matching to get new translation c and 
 		// new rotation R. Update the mesh by c and R.
