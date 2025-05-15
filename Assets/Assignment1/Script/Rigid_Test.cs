@@ -6,11 +6,14 @@ using System;
 public class Rigid_Test : MonoBehaviour 
 {
 	bool launched 		= false;
+	bool windBlow		= false;
 	float dt 			= 0.015f;
 	Vector3 v 			= new Vector3(0, 0, 0);	// velocity
 	Vector3 w 			= new Vector3(0, 0, 0);	// angular velocity
 	
-	public float mass;							// mass
+	public float mass;							
+    public Vector3 gravity 	= new Vector3(0.0f, -9.8f, 0.0f);
+    public Vector3 wind 	= new Vector3(3.0f, 0.0f, -12.0f);
 	Matrix4x4 I_ref;							// reference inertia
 
 	float linear_decay	= 0.999f;				// for velocity decay
@@ -22,8 +25,6 @@ public class Rigid_Test : MonoBehaviour
     Vector3[] vertices;
 	Vector3 x;
 	Quaternion q;
-
-    public Vector3 gravity = new Vector3(0.0f, -9.8f, 0.0f);
 
     // Use this for initialization
     void Start () 
@@ -98,53 +99,72 @@ public class Rigid_Test : MonoBehaviour
 
     // In this function, update v and w by the impulse due to the collision with
     //a plane <P, N>
-    void Collision_Impulse(Vector3 P, Vector3 N)
+    void Collision_Impulse(string GamePanel)
 	{
+		GameObject GoPanel = GameObject.Find(GamePanel);
+		Vector3 Panel_pos = GoPanel.transform.position;
+		Vector3 Panel_normal = GoPanel.transform.up;
+
 		List<Vector3> CollisionPoints = new List<Vector3>();
+		// Quaternion transform to matrix ,the R of Rr_i Rri
 		Matrix4x4 q_matrix = Matrix4x4.Rotate(q);
 
         for (int i = 0; i < vertices.Length; i++)
 		{
-            Vector3 xi = transform.TransformPoint(vertices[i]);
-			float d  = Vector3.Dot(xi - P, N);
-			if(d < 0.0f)
+			// point pos
+            Vector3 xi = transform.TransformPoint(vertices[i]); 
+
+			float sdf  = Vector3.Dot(xi - Panel_pos, Panel_normal);
+			// if sdf < 0 ,then point inside the plane
+			if(sdf < 0.0f)			
 			{
                 Vector3 Rri = q_matrix.MultiplyVector(vertices[i]);
                 Vector3 vi = v + Vector3.Cross(w, Rri);
-                float viDotN = Vector3.Dot(vi, N);
-				if(viDotN < 0.0f)
-				{
+
+				// if obj keeps going inside of plane (vi direction to inside of plane)
+				// try to change it until vi are going outside of plane
+                float viDotN = Vector3.Dot(vi, Panel_normal);
+				if(viDotN < 0.0f)			
 					CollisionPoints.Add(vertices[i]);
-				}
             }
         }
 
 		if (CollisionPoints.Count == 0) return;
 
-		Vector3 averageCollisionPoint = Vector3.zero;
+		Vector3 avgPoint = Vector3.zero;
 		for(int i = 0; i < CollisionPoints.Count; i++)
 		{
-			averageCollisionPoint += CollisionPoints[i];
+			avgPoint += CollisionPoints[i];
         }
-		averageCollisionPoint /= CollisionPoints.Count;
-        Vector3 R_length = q_matrix.MultiplyVector(averageCollisionPoint);
-		Vector3 CollisionPointSpeed = v + Vector3.Cross(w, R_length);
+		avgPoint /= CollisionPoints.Count;
+        Vector3 R_length = q_matrix.MultiplyVector(avgPoint);
+		Vector3 CpVelocity = v + Vector3.Cross(w, R_length);
 
 		// Impluse Method
-		Vector3 CollisionPointSpeedN = N * Vector3.Dot(N, CollisionPointSpeed);
-		Vector3 CollisionPointSpeedF = CollisionPointSpeed - CollisionPointSpeedN;
-		Vector3 CollisionPointSpeedN_New = -restitution * CollisionPointSpeedN;
-        float a = Math.Max(1.0f - friction * (1.0f + restitution) 
-			* CollisionPointSpeedN.magnitude / CollisionPointSpeedF.magnitude, 0.0f);
-		Vector3 CollisionPointSpeedF_New = a * CollisionPointSpeedF;
-		Vector3 CollisionPointSpeed_New 
-			= CollisionPointSpeedN_New + CollisionPointSpeedF_New;
+		// Collision point velocity in normal direction of plane
+		// value(dot result) * direction of normal
+		Vector3 CpVelocity_N 
+			= Panel_normal * Vector3.Dot(Panel_normal, CpVelocity);
 
-        Matrix4x4 RriStar = Get_Cross_Matrix(R_length);
+		// Collision point velocity in tangent direction of plane
+		Vector3 CpVelocity_Tan = CpVelocity - CpVelocity_N;
+		Vector3 CpVelocity_N_New = -restitution * CpVelocity_N;
+		// math or mathf?
+        float alpha = Mathf.Max(1.0f - friction * (1.0f + restitution) 
+			* CpVelocity_N.magnitude / CpVelocity_Tan.magnitude, 0.0f);
+		Vector3 CpVelocity_Tan_New = alpha * CpVelocity_Tan;
+		Vector3 CpVelocity_New = CpVelocity_N_New + CpVelocity_Tan_New;
+
+        Matrix4x4 RriAcc = Get_Cross_Matrix(R_length);
+		// I_Inverse = inertia.inverse
         Matrix4x4 I_Inverse = Matrix4x4.Inverse(q_matrix * I_ref * Matrix4x4.Transpose(q_matrix));
-        Matrix4x4 K = Matrix_Subtract(Matrix_Mulitiply(Matrix4x4.identity, 1.0f / mass), RriStar * I_Inverse * RriStar);
-        Vector3 J = K.inverse.MultiplyVector(CollisionPointSpeed_New - CollisionPointSpeed);
+        Matrix4x4 IofMass = Matrix_Mulitiply(Matrix4x4.identity, 1.0f / mass);
+		Matrix4x4 K = Matrix_Subtract(IofMass, RriAcc * I_Inverse * RriAcc);
+        Vector3 J = K.inverse.MultiplyVector(CpVelocity_New - CpVelocity);
 
+		// torque is Rri×j; j is Impulse, Force × dt 
+		// angular_v × torque is the addition of v
+		// decomposition volecity into v and w
         v += 1.0f / mass * J;
         w += I_Inverse.MultiplyVector(Vector3.Cross(R_length, J));
     }
@@ -158,25 +178,40 @@ public class Rigid_Test : MonoBehaviour
 			transform.position = new Vector3 (0, 0.6f, 0);
 			restitution = 0.5f;
 			launched=false;
+			windBlow = false;
 		}
-		if(Input.GetKey("l"))
+		if(Input.GetKey("f"))
 		{
 			v = new Vector3 (5, 2, 0);
 			launched = true;
+		}
+		if(Input.GetKey("b"))
+		{
+			// wind blow, but how?
+			windBlow = true;
+			launched = true;
+		}
+		if(Input.GetKey("p"))
+		{
+			// wind blow, but how?
+			windBlow = false;
 		}
 
 		if (launched)
 		{
 			// Part I: Update velocities
+			if(windBlow) 
+				v += dt * wind;
 			v += dt * gravity;
 			v *= linear_decay;
 			w *= angular_decay;
-			if (Vector3.Magnitude(v) <= 0.05f) 
+			if (Vector3.Magnitude(v) <= 0.05f) 	
 				launched = false;
 
 			// Part II: Collision Impulse
-			Collision_Impulse(new Vector3(0, 0.01f, 0), new Vector3(0, 1, 0));
-			Collision_Impulse(new Vector3(2, 0, 0), new Vector3(-1, 0, 0));
+			// how to use build_in func to iterate all plane in once?
+			Collision_Impulse("ground");
+			Collision_Impulse("backwall");
 
 			// Part III: Update position & orientation
 			Vector3 x0 = transform.position;
