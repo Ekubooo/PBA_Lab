@@ -4,14 +4,18 @@ using UnityEngine;
 
 public class implicit_model : MonoBehaviour
 {
-	float 		t 		= 0.0333f;
-	float 		mass	= 1;
-	float		damping	= 0.99f;
-	float 		rho		= 0.995f;
-	float 		spring_k = 8000;
+	float 		t 			= 0.0333f;		// time step
+	float 		mass		= 1;
+	float		damping		= 0.99f;
+	float 		rho			= 0.995f;		// rho is the estimated spectral radius 
+											// of the iterative matrix.
+	float 		spring_k 	= 8000;
 	int[] 		E;
 	float[] 	L;
 	Vector3[] 	V;
+
+	Vector3 gravityConst = new Vector3(0.0f,-9.8f,0.0f);
+
 
     // Start is called before the first frame update
     void Start()
@@ -24,11 +28,11 @@ public class implicit_model : MonoBehaviour
 		Vector2[] UV 	= new Vector2[n*n];
 		int[] triangles	= new int[(n-1)*(n-1)*6];
 		for(int j=0; j<n; j++)
-		for(int i=0; i<n; i++)
-		{
-			X[j*n+i] =new Vector3(5-10.0f*i/(n-1), 0, 5-10.0f*j/(n-1));
-			UV[j*n+i]=new Vector3(i/(n-1.0f), j/(n-1.0f));
-		}
+			for(int i=0; i<n; i++)
+			{
+				X[j*n+i] =new Vector3(5-10.0f*i/(n-1), 0, 5-10.0f*j/(n-1));
+				UV[j*n+i]=new Vector3(i/(n-1.0f), j/(n-1.0f));
+			}
 		int t=0;
 		for(int j=0; j<n-1; j++)
 		for(int i=0; i<n-1; i++)	
@@ -51,12 +55,12 @@ public class implicit_model : MonoBehaviour
 		int[] _E = new int[triangles.Length*2];
 		for (int i=0; i<triangles.Length; i+=3) 
 		{
-			_E[i*2+0]=triangles[i+0];
-			_E[i*2+1]=triangles[i+1];
-			_E[i*2+2]=triangles[i+1];
-			_E[i*2+3]=triangles[i+2];
-			_E[i*2+4]=triangles[i+2];
-			_E[i*2+5]=triangles[i+0];
+			_E[i*2+0] = triangles[i+0];
+			_E[i*2+1] = triangles[i+1];
+			_E[i*2+2] = triangles[i+1];
+			_E[i*2+3] = triangles[i+2];
+			_E[i*2+4] = triangles[i+2];
+			_E[i*2+5] = triangles[i+0];
 		}
 		//Reorder the original edge list
 		for (int i=0; i<_E.Length; i+=2)
@@ -155,17 +159,21 @@ public class implicit_model : MonoBehaviour
 	void Get_Gradient(Vector3[] X, Vector3[] X_hat, float t, Vector3[] G)
 	{
 		//Momentum and Gravity.
+			// every gradient of points, in G[]
+			// (implicit) gradient = M/t^2 * (x1-x0) - ///force(x1)///
+			// force(gravity) part
+			// can mass be different and store into an array mass[]? maybe
 		for (int i = 0; i < G.Length; i++)
-    	{
-			G[i] = (mass/(t*t)) * (X[i]-X_hat[i]) - mass*new Vector3(0.0f,-9.8f,0.0f);
-    	}
+			G[i] = (mass/(t*t)) * (X[i]-X_hat[i]) - mass * gravityConst;
 
-		//Spring Force.
+		//Spring Force. every edge
+			// force(spring) part
 		for (int e = 0; e < E.Length/2; e++)
 		{
 			int i = E[e * 2 + 0];
 			int j = E[e * 2 + 1];
-			Vector3 f = spring_k*(1-L[e] / (X[i]-X[j]).magnitude) * (X[i] - X[j]);
+			// 1D Spring gradient of Energy (L05P22)
+			Vector3 f = spring_k * (1 - L[e]/(X[i]-X[j]).magnitude) * (X[i] - X[j]);
 
 			G[i] += f;
 			G[j] -= f;
@@ -185,9 +193,13 @@ public class implicit_model : MonoBehaviour
 		for (int i = 0; i < X.Length; i++)
 		{
 			V[i] *= damping;
-			X[i] = X_hat[i] = X[i] + t*V[i];
+			X_hat[i] = X[i] + t*V[i];
+			// X[i] = X_hat[i] = X[i] + t*V[i];
+			X[i] = X_hat[i];
 		}
 		
+		// =============================================
+		// The Jacobi Method(not Newton Method) with Chebyshev Acceleration 
 		float omega = 1.0f;
 		for(int k=0; k<32; k++)
 		{
@@ -195,6 +207,7 @@ public class implicit_model : MonoBehaviour
 			else if (k == 1)	omega = 2.0f / (2.0f - rho * rho);
 			else			 	omega = 4.0f / (4.0f - rho * rho * omega);
 
+			// (x, x guass, time step, Gradient of every point)
 			Get_Gradient(X, X_hat, t, G);
 
 			//Update X by gradient.
@@ -202,19 +215,22 @@ public class implicit_model : MonoBehaviour
 			{
 				if (i == 0 || i == 20) continue;
 
-				Vector3 X_new = omega * (X[i] - 1 / (mass / (t * t) + 4 * spring_k) * G[i]) + (1 - omega) * last_X[i];
+				// the simple update (lab2.pdf) considering the Hessian as a diagonal matrix
+				// in the Algorithm, deltaX replace by spring_k and stuff.
+				Vector3 X_new = 
+					omega 		* (X[i] - 1/(mass/(t*t) + 4*spring_k) * G[i]) +
+					(1 - omega) * last_X[i];
 				last_X[i] = X[i];
 				X[i] = X_new;
 			}
 		}
+		// =============================================
+
 		for(int i = 0; i < X.Length; i++)
-		{
 			V[i] += (X[i] - X_hat[i]) / t;
-		}
 
 		//Finishing.
 		mesh.vertices = X;
-
 		Collision_Handling ();
 		mesh.RecalculateNormals ();
 	}
