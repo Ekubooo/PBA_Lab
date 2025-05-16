@@ -10,7 +10,7 @@ Update()
     for every X: do
         damping Velocity 
         update X by Velocity
-        copy X to X_hat
+        create X_hat by X
     /// Jacobi Method with Chebyshev //////////////////////////
     for iterate k times: do
         /// Get Gradient ==========================================
