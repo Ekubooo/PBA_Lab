@@ -1,4 +1,5 @@
 # implicit model
+```
 begin
 Start()
     process the square into 20×20×2 mesh
@@ -30,6 +31,9 @@ Update()
     apply new X position
     Collection handling
 end
+```
+
+# PBD model
 
 
         
