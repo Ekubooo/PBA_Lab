@@ -16,7 +16,6 @@ public class implicit_model : MonoBehaviour
 
 	Vector3 gravityConst = new Vector3(0.0f,-9.8f,0.0f);
 
-
     // Start is called before the first frame update
     void Start()
     {

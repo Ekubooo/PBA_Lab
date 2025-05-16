@@ -1,29 +1,40 @@
 # implicit model
+begin
+Start()
+    process the square into 20×20×2 mesh
+    create edge array       //for spring system
+    sort and remove duplicate edges
+    create diagonal edge    //diagonal spring
+    initialization completed
+Update()
+    for every X: do
+        damping Velocity 
+        update X by Velocity
+        copy X to X_hat
+    /// Jacobi Method with Chebyshev //////////////////////////
+    for iterate k times: do
+        /// Get Gradient ==========================================
+        for every X:        
+            G[] = M/t^2 * (x1-x0) - f
+            gradient calcute by force(gravity)
+        for every X: 
+            G[] = k(1 - Le/||xi-xj||)(xi-xj)
+            gradient calcute by force(Spring)
+        /// Gradient End ==========================================
+        for every X:                    // Update X by Gradient
+            update deltaX by Hessian    // Simplified Hessian
+            update deltaX by Chebyshev Acceleration 
+    /// Jacobi End/////////////////////////////////////////////
+    for every X:   
+        update Velocity 
+    apply new X position
+    Collection handling
+end
 
-<pre class="pseudocode" lineNumber="true">
-% This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
-\begin{algorithm}
-\caption{Quicksort with lineNumber}
-\begin{algorithmic}
-\PROCEDURE{Quicksort}{$A, p, r$}
-    \IF{$p < r$} 
-        \STATE $q = $ \CALL{Partition}{$A, p, r$}
-        \STATE \CALL{Quicksort}{$A, p, q - 1$}
-        \STATE \CALL{Quicksort}{$A, q + 1, r$}
-    \ENDIF
-\ENDPROCEDURE
-\PROCEDURE{Partition}{$A, p, r$}
-    \STATE $x = A[r]$
-    \STATE $i = p - 1$
-    \FOR{$j = p$ \TO $r - 1$}
-        \IF{$A[j] < x$}
-            \STATE $i = i + 1$
-            \STATE exchange
-            $A[i]$ with $A[j]$
-        \ENDIF
-        \STATE exchange $A[i]$ with $A[r]$
-    \ENDFOR
-\ENDPROCEDURE
-\end{algorithmic}
-\end{algorithm}
-</pre>
+
+        
+        
+
+
+
+
