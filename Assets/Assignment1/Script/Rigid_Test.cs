@@ -13,7 +13,7 @@ public class Rigid_Test : MonoBehaviour
 	
 	public float mass;							
     public Vector3 gravity 	= new Vector3(0.0f, -9.8f, 0.0f);
-    public Vector3 wind 	= new Vector3(3.0f, 0.0f, -12.0f);
+    public Vector3 wind 	= new Vector3(5.0f, 0.0f, -3.0f);
 	Matrix4x4 I_ref;							// reference inertia
 
 	float linear_decay	= 0.999f;				// for velocity decay
@@ -177,8 +177,9 @@ public class Rigid_Test : MonoBehaviour
 		{
 			transform.position = new Vector3 (0, 0.6f, 0);
 			restitution = 0.5f;
-			launched=false;
+			launched = false;
 			windBlow = false;
+			v = new Vector3 (0, 0, 0);
 		}
 		if(Input.GetKey("f"))
 		{
@@ -193,7 +194,7 @@ public class Rigid_Test : MonoBehaviour
 		}
 		if(Input.GetKey("p"))
 		{
-			// wind blow, but how?
+			// wind blow, get some mouse event!
 			windBlow = false;
 		}
 
