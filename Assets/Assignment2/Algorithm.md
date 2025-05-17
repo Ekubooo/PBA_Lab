@@ -35,6 +35,10 @@ end
 
 # PBD model
 
+# overall wind simluation
+- lerp mass on every different point
+- disrupt wind force value and direction on every point
+
 
         
         

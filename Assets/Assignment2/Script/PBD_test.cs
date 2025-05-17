@@ -10,9 +10,10 @@ public class PBD_test: MonoBehaviour
 	Vector3[] 	V;					// vertex velocity
 
 	bool windBlow = false;
+	float _speed 			= 3.0f;
 	Vector3 gravityConst 	= new Vector3(0.0f, -9.8f, 0.0f);
     Vector3 wind 			= new Vector3(6.0f, -2.0f, -15.0f);
-
+	
 	// Use this for initialization
 	void Start () 
 	{
@@ -198,7 +199,10 @@ public class PBD_test: MonoBehaviour
 
 		if(Input.GetKey("f")) windBlow = true;
 		if(Input.GetKey("r")) windBlow = false;
-		float timeVary = Time.time % 1 + 1.5f;
+		// float timeVary = (Time.time *_speed) % 1 + 1.0f;
+		float timeVary = (Time.time *_speed) % 2.0f;
+		if (timeVary > 1) timeVary = 2.0f - timeVary;
+		timeVary += 1.5f;
 
 		for(int i=0; i<X.Length; i++)
 		{

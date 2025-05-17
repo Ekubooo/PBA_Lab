@@ -14,8 +14,11 @@ public class implicit_test : MonoBehaviour
 	float[] 	L;
 	Vector3[] 	V;
 
-	Vector3 gravityConst = new Vector3(0.0f,-9.8f,0.0f);
-
+	Vector3 gravityConst	= new Vector3(0.0f,-9.8f,0.0f);
+    Vector3 WindConst 		= new Vector3(6.0f, -2.0f, -15.0f);
+	bool 	windBlow 		= false;
+	float _speed 			= 3.0f;
+	
     // Start is called before the first frame update
     void Start()
     {
@@ -157,21 +160,28 @@ public class implicit_test : MonoBehaviour
 
 	void Get_Gradient(Vector3[] X, Vector3[] X_hat, float t, Vector3[] G)
 	{
-		//Momentum and Gravity.
-			// every gradient of points, in G[]
-			// (implicit) gradient = M/t^2 * (x1-x0) - ///force(x1)///
-			// force(gravity) part
-			// can mass be different and store into an array mass[]? maybe
-		for (int i = 0; i < G.Length; i++)
-			G[i] = (mass/(t*t)) * (X[i]-X_hat[i]) - mass * gravityConst;
+		// can mass different? or can wind disrupt by some noice?
+		// can: v3[] wind = windConst * disrupt(x.uv) ? unfinished
+		// can you make control bottom of the script show inside of unity?
+		
+		Vector3 wind = Vector3.zero;
+		if (windBlow) 
+		{
+			// float EffectParamart = ((Time.time % 0.002f) * 500.0f + 1.5f);
+			float EffectParamart = (Time.time * _speed) % 2.0f;
+			if(EffectParamart > 1) EffectParamart = 2.0f - EffectParamart;
+			wind = WindConst * (EffectParamart + 1.5f);
+		}
 
-		//Spring Force. every edge
-			// force(spring) part
+		// force(gravity + wind) part
+		for (int i = 0; i < G.Length; i++)
+			G[i] = (mass/(t*t)) * (X[i]-X_hat[i]) - mass*(gravityConst + wind);
+
+		// force(spring) part
 		for (int e = 0; e < E.Length/2; e++)
 		{
 			int i = E[e * 2 + 0];
 			int j = E[e * 2 + 1];
-			// 1D Spring gradient of Energy (L05P22)
 			Vector3 f = spring_k * (1 - L[e]/(X[i]-X[j]).magnitude) * (X[i] - X[j]);
 
 			G[i] += f;
@@ -188,13 +198,16 @@ public class implicit_test : MonoBehaviour
 		Vector3[] X_hat 	= new Vector3[X.Length];
 		Vector3[] G 		= new Vector3[X.Length];
 
+		if(Input.GetKey("f")) windBlow = true;
+		if(Input.GetKey("r")) windBlow = false;
+		
 		//Initial Setup.
 		for (int i = 0; i < X.Length; i++)
 		{
 			V[i] *= damping;
 			X_hat[i] = X[i] + t*V[i];
-			// X[i] = X_hat[i] = X[i] + t*V[i];
 			X[i] = X_hat[i];
+			// X[i] = X_hat[i] = X[i] + t*V[i];
 		}
 		
 		// =============================================
@@ -206,7 +219,7 @@ public class implicit_test : MonoBehaviour
 			else if (k == 1)	omega = 2.0f / (2.0f - rho * rho);
 			else			 	omega = 4.0f / (4.0f - rho * rho * omega);
 
-			// (x, x guass, time step, Gradient of every point)
+			// (x, x guass, time step, Gradient, wind)
 			Get_Gradient(X, X_hat, t, G);
 
 			//Update X by gradient.
@@ -214,12 +227,10 @@ public class implicit_test : MonoBehaviour
 			{
 				if (i == 0 || i == 20) continue;
 
-				// the simple update (lab2.pdf) considering spring as 1D
-				// considering the Hessian as a diagonal matrix
-				// so, in the Algorithm, deltaX replace by spring_k and stuff.
-				Vector3 X_new = 
-					omega 		* (X[i] - 1/(mass/(t*t) + 4*spring_k) * G[i]) +
-					(1 - omega) * last_X[i];
+				// bug happened!
+				// Vector3 X_new = X[i] - 1/(mass/(t*t) + 4*spring_k) * G[i];
+				Vector3 X_new = X[i] - (1/(mass/(t*t) + 4*spring_k)) * G[i];
+				X_new = omega*X_new + (1-omega)*last_X[i];
 				last_X[i] = X[i];
 				X[i] = X_new;
 			}
