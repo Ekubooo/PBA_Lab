@@ -8,12 +8,12 @@ Start()
     create diagonal edge    //diagonal spring
     initialization completed
 Update()
-    for every X: do
+    for every X: 
         damping Velocity 
         update X by Velocity
         create X_hat by X
     /// Jacobi Method with Chebyshev //////////////////////////
-    for iterate k times: do
+    for iterate k times: 
         /// Get Gradient ==========================================
         for every X:        
             G[] = M/t^2 * (x1-x0) - f
@@ -22,10 +22,10 @@ Update()
             G[] = k(1 - Le/||xi-xj||)(xi-xj)
             gradient calcute by force(Spring)
         /// Gradient End ==========================================
-        for every X:                    // Update X by Gradient
-            update deltaX by Hessian    // Simplified Hessian
-            update deltaX by Chebyshev Acceleration 
-    /// Jacobi End/////////////////////////////////////////////
+        for every X: Update X by Gradient
+            update deltaX by Hessian    // Simplify Hessian by k
+            update X by deltaX using Chebyshev method
+    /// Jacobi End ////////////////////////////////////////////
     for every X:   
         update Velocity 
     apply new X position

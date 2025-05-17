@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PBD_model: MonoBehaviour 
+public class PBD_test: MonoBehaviour 
 {
 	float 		t = 0.0333f;		// delta T
 	float		damping = 0.99f;	// damp force

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class implicit_model : MonoBehaviour
+public class implicit_test : MonoBehaviour
 {
 	float 		t 			= 0.0333f;		// time step
 	float 		mass		= 1;
