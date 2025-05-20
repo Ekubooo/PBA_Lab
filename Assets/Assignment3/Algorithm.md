@@ -7,8 +7,8 @@ Start()
     calculate constant inverse_Dm
 Update()
     input detect
-    for: 10-time iterations
     /// FVM ////////////////////////////////
+    for: 10-time iterations
         Deformation Gradient
         Green Strain
         2nd PK Stress

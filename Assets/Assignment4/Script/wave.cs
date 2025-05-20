@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class wave_motion : MonoBehaviour 
+public class wave : MonoBehaviour 
 {
 	int size 		= 100;
 	float rate 		= 0.005f;
@@ -204,7 +204,9 @@ public class wave_motion : MonoBehaviour
 	{		
 		// Step 1:
 		// TODO: Compute new_h based on the shallow wave model.
-		// Why size*size instead of 3*3 ???
+		// using Finite Differencing to simplify the calculation
+		// using const value/matrix to replce the pressure item
+		// so finally there is only hight in the function
 		float sumH = 0.0f;
 		for(int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
@@ -217,14 +219,15 @@ public class wave_motion : MonoBehaviour
 			
 		// -------------------------------------------------------------
 		// Step 2: Block->Water coupling		// ????????
-		//TODO: for block 1, calculate low_h.
+		//TODO: for each block, calculate low_h.
 		//TODO: then set up b and cg_mask for conjugate gradient.
-		//TODO: Solve the Poisson equation to obtain vh (virtual height).
+		//TODO: solve the Poisson equation to obtain vh (virtual height).
 		coupling1st("Block", ref old_h, ref h, ref new_h);
 		coupling1st("Cube" , ref old_h, ref h, ref new_h);
 
 		// -------------------------------------------------------------
 		// TODO: Diminish vh.
+		// stable smooth to avoid issue from explict integration
 		for(int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
 				if (cg_mask[i, j]) vh[i, j] *= gamma;
@@ -267,9 +270,7 @@ public class wave_motion : MonoBehaviour
 		// TODO: Load X.y into h.
 		for(int i = 0; i < size; ++i)
 			for(int j = 0; j < size; ++j)
-			{
 				h[i,j] = X[i*size + j].y;
-			}
 
 		if (Input.GetKeyDown ("r")) 
 		{
@@ -279,25 +280,20 @@ public class wave_motion : MonoBehaviour
 			float r = Random.Range(0.02f, 0.05f);
 			h[i,j] += 9 * r;
 
+			// volum balance
 			for(int a = 0; a < 3; a++)
 				for(int b = 0; b < 3; b++)
-				{
 					h[i-1+a, j-1+b] -= r;
-				}
 		}
 	
 		for(int l=0; l<4; l++)
-		{
 			Shallow_Wave(old_h, h, new_h);
-		}
 		// Shallow_Wave(old_h, h, new_h);
 
 		//TODO: Store h back into X.y and recalculate normal.
 		for(int i = 0; i < size; ++i)
 			for(int j = 0; j < size; ++j)
-			{
 				 X[i*size + j].y = h[i,j];
-			}
 
 		mesh.vertices = X;
 		mesh.RecalculateNormals();	// Unity Build_In API
