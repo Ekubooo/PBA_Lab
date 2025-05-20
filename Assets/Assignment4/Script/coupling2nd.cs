@@ -18,7 +18,7 @@ public class coupling2nd : MonoBehaviour
 	float[,]	cg_Ap;
 	bool tag = true;
 
-	int vRange = 5;
+	int vRange = 3;
 
 	Vector3 	cube_v = Vector3.zero;
 	Vector3 	cube_w = Vector3.zero;
@@ -225,10 +225,10 @@ public class coupling2nd : MonoBehaviour
 
 					if(vh[i,j]!=0)
 					{
-						Vector3 r=p+dist*(q-p)-cube_p;
-						Vector3 f=new Vector3(0, vh[i,j], 0)*4.0f;
-						force+=f;
-						torque+=Vector3.Cross(r, f);
+						Vector3 r = p + dist*(q-p) - cube_p;
+						Vector3 f = new Vector3(0, vh[i,j], 0) * 4.0f;
+						force += f; 
+						torque += Vector3.Cross(r, f);
 					}
 				}
 
@@ -299,9 +299,6 @@ public class coupling2nd : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-		//if(tag==false)	return;
-		//tag=false;
-
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Vector3[] X    = mesh.vertices;
 		float[,] new_h = new float[size, size];
@@ -314,13 +311,13 @@ public class coupling2nd : MonoBehaviour
 
 		if (Input.GetKeyDown ("r")) 
 		{
-			int i=(int)(Random.Range(0.0f, 1.0f)*size);
-			int j=(int)(Random.Range(0.0f, 1.0f)*size);
+			int i = (int)(Random.Range(0.0f, 1.0f)*size);
+			int j = (int)(Random.Range(0.0f, 1.0f)*size);
 
-			if(i<1) i=1;
-			if(j<1) j=1;
-			if(i>=size-1)	i=size-2;
-			if(j>=size-1)	j=size-2;
+			if(i<1) i = 1;
+			if(j<1) j = 1;
+			if(i>=size-1) i = size -2;
+			if(j>=size-1) j = size -2;
 
 			float v = Random.Range(0.02f, 0.05f);
 			h[i,j] += 9 * v;
