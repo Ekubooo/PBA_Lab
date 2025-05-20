@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class wave : MonoBehaviour 
+public class coupling2way : MonoBehaviour 
 {
 	int size 		= 100;
 	float rate 		= 0.005f;
@@ -16,11 +16,10 @@ public class wave : MonoBehaviour
 	float[,]	cg_p;
 	float[,]	cg_r;
 	float[,]	cg_Ap;
-	bool 	tag = true;
+	bool 	tag 	= true;
 
 	Vector3 	cube_v = Vector3.zero;
 	Vector3 	cube_w = Vector3.zero;
-
 
 	// Use this for initialization
 	void Start () 
@@ -165,18 +164,21 @@ public class wave : MonoBehaviour
             for (int j = lowerBoundry - visibleValue; j <= upperBoundry + visibleValue; j++)
 				if (i >= 0 && j >= 0 && i < size && j < size)
 				{
+					p = Vector3.zero;
+					q = Vector3.zero;
 					p = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
 					q = CubeA.transform.InverseTransformPoint
 						(new Vector3(i*0.1f - size*0.05f, -9, j*0.1f - size*0.05f));
-					
+
 					Ray ray = new Ray(p, q - p);
 					float dist = 99999;
 					bounds.IntersectRay(ray, out dist);
-					low_h[i, j] = -10 + dist;	//cube_p.y-0.5f;
+					low_h[i, j] = -11 + dist;	//cube_p.y-0.5f;
 				}
 
 		// TODO: then set up b and cg_mask for conjugate gradient.
+		//Initialize Pressure
 		for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
             {
@@ -198,28 +200,85 @@ public class wave : MonoBehaviour
 		// -------------------------------------------------------------
 	}
 
+	void coupling2nd(string GameObj)
+	{
+		GameObject Cube =  GameObject.Find(GameObj);
+		Vector3 cube_p = Cube.transform.position;
+		Mesh cube_mesh = Cube.GetComponent<MeshFilter> ().mesh;
+
+		int visibleValue 	= 6;
+		int leftBoundry 	= (int)((cube_p.x + 5.0f) * 10) - visibleValue;
+		int rightBoundry 	= (int)((cube_p.x + 5.0f) * 10) + visibleValue;
+		int lowerBoundry 	= (int)((cube_p.z + 5.0f) * 10) - visibleValue;
+		int upperBoundry 	= (int)((cube_p.z + 5.0f) * 10) + visibleValue;
+		Bounds bounds=cube_mesh.bounds;
+
+		float t = 0.004f;
+		float mass = 10.0f;
+		Vector3 force = new Vector3(0, -mass*9.8f, 0);
+		Vector3 torque = new Vector3(0, 0, 0);
+
+		Vector3 p = Vector3.zero;
+		Vector3 q = Vector3.zero;
+		// Traverse the mask
+		for (int i = leftBoundry - visibleValue; i <= rightBoundry + visibleValue; i++)
+            for (int j = lowerBoundry - visibleValue; j <= upperBoundry + visibleValue; j++)
+				if (i >= 0 && j >= 0 && i < size && j < size)
+				{
+					p = Vector3.zero;
+					q = Vector3.zero;
+					p = Cube.transform.InverseTransformPoint
+						(new Vector3(i*0.1f - size*0.05f, -10, j*0.1f - size*0.05f));
+					q = Cube.transform.InverseTransformPoint
+						(new Vector3(i*0.1f - size*0.05f, -9, j*0.1f - size*0.05f));
+
+					Ray ray = new Ray(p, q - p);
+					float dist = 99999;
+					bounds.IntersectRay(ray, out dist);
+
+					// calculate torque
+					if(vh[i,j] != 0)
+					{
+						Vector3 r = p + dist*(q-p) - cube_p;
+						Vector3 f = new Vector3(0, vh[i,j], 0) * 4.0f;
+						force+=f;
+
+						torque += Vector3.Cross(r, f);
+					}
+					// damping 
+					cube_v *= 0.99f;
+					cube_w *= 0.99f;
+					cube_v += force * t/mass;
+					cube_p += cube_v * t;
+					Cube.transform.position = cube_p;	
+					cube_w += torque * t/(100.0f*mass);
+					Quaternion cube_q = Cube.transform.rotation;
+					Quaternion wq = new Quaternion(cube_w.x, cube_w.y, cube_w.z, 0);
+					Quaternion temp_q = wq*cube_q;
+					cube_q.x += 0.5f * t * temp_q.x;
+					cube_q.y += 0.5f * t * temp_q.y;
+					cube_q.z += 0.5f * t * temp_q.z;
+					cube_q.w += 0.5f * t * temp_q.w;
+					Cube.transform.rotation=cube_q;
+				}
+	}
+
 	void Shallow_Wave(float[,] old_h, float[,] h, float [,] new_h)
 	{		
-		// Step 1:
-		// TODO: Compute new_h based on the shallow wave model.
-		// using Finite Differencing to simplify the calculation
-		// using const value/matrix to replce the pressure item
-		// so finally there is only hight in the function
 		float sumH = 0.0f;
 		for(int i = 0; i < size; i++)
 			for(int j = 0; j < size; j++)
+			{
+				new_h[i,j] = h[i,j] + (h[i,j] - old_h[i,j]) * damping;
 				if(i!=0 && j!=0 && i!=size-1 && j!=size-1)
 				{
 					sumH = 0.0f;
 					sumH = h[i+1,j] + h[i-1,j] + h[i,j+1] + h[i,j-1] - 4*h[i,j];
-					new_h[i,j] = h[i,j] + (h[i,j] - old_h[i,j]) * damping + sumH * rate;
+					new_h[i,j] += sumH * rate;
 				}
-			
-		// -------------------------------------------------------------
-		// Step 2: Block->Water coupling		// ????????
-		//TODO: for each block, calculate low_h.
-		//TODO: then set up b and cg_mask for conjugate gradient.
-		//TODO: solve the Poisson equation to obtain vh (virtual height).
+				old_h[i,j] = h[i,j];
+			}
+
 		coupling1st("Block", ref old_h, ref h, ref new_h);
 		coupling1st("Cube" , ref old_h, ref h, ref new_h);
 
@@ -239,22 +298,14 @@ public class wave : MonoBehaviour
 					sumVH = 0.0f;
 					sumVH = vh[i+1,j] + vh[i-1,j] + vh[i,j+1] + vh[i,j-1] - 4*vh[i,j];
 					new_h[i,j] += sumVH * rate;
-					// new_h[i,j] += vh[i,j] + (vh[i,j] - old_h[i,j]) * damping + sumVH * rate;
 				} 
 		
-		// Step 3
-		// TODO: old_h <- h; h <- new_h;
 		for(int i = 0; i < size; ++i)
 			for(int j = 0; j < size; ++j)
-			{
-				// h[i,j] = new_h[i,j]; 	// error if let h[i,j] update first
-				old_h[i,j] = h[i,j];
 				h[i,j] = new_h[i,j];
-			}
 		
-		// Step 4: Water->Block coupling.
-		// unfinish
-		// More TODO here.
+		// 2nd way: Water->Block coupling.
+		coupling2nd("Cube");
 	}
 	
 	// Update is called once per frame
