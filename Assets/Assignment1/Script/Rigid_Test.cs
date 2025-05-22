@@ -133,9 +133,8 @@ public class Rigid_Test : MonoBehaviour
 
 		Vector3 avgPoint = Vector3.zero;
 		for(int i = 0; i < CollisionPoints.Count; i++)
-		{
 			avgPoint += CollisionPoints[i];
-        }
+			
 		avgPoint /= CollisionPoints.Count;
         Vector3 R_length = q_matrix.MultiplyVector(avgPoint);
 		Vector3 CpVelocity = v + Vector3.Cross(w, R_length);
