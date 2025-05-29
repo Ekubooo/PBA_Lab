@@ -1,0 +1,42 @@
+// MyRigidbody.compute
+#pragma kernel CSMain
+
+struct RigidBodyData 
+{
+    float3 position;
+    float3 velocity;
+    float3 angularVelocity;
+    float4 rotation;
+};
+
+RWStructuredBuffer<RigidBodyData> rigidBodies;
+
+float3 gravity;
+float dt;
+float linear_decay;
+float angular_decay;
+
+[numthreads(1, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    RigidBodyData rb = rigidBodies[id.x];
+
+    // Apply gravity
+    rb.velocity += gravity * dt;
+
+    // Apply decay
+    rb.velocity *= linear_decay;
+    rb.angularVelocity *= angular_decay;
+
+    // Integrate position
+    rb.position += rb.velocity * dt;
+
+    // Integrate rotation (simple quaternion method)
+    float3 dw = 0.5f * dt * rb.angularVelocity;
+    float4 q = rb.rotation;
+    float4 qdw = float4(dw.x, dw.y, dw.z, 0.0);
+    rb.rotation = normalize(q + mul(qdw, q)); // Quaternion multiply
+
+    rigidBodies[id.x] = rb;
+}
+

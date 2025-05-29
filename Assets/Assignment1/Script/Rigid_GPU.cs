@@ -3,8 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-// public class Rigid_GPU : MonoBehaviour 
-public class RigidBunnyController : MonoBehaviour
+public class Rigid_GPU : MonoBehaviour 
 {
     struct RigidBodyData
     {

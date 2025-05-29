@@ -182,6 +182,8 @@ MonoBehaviour:
   mass: 0
   gravity: {x: 0, y: -9.8, z: 0}
   wind: {x: 5, y: 0, z: -3}
+  linear_decay: 0.999
+  angular_decay: 0.98
 --- !u!1 &605659404
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,8 +16,10 @@ public class Rigid_Test : MonoBehaviour
     public Vector3 wind 	= new Vector3(5.0f, 0.0f, -3.0f);
 	Matrix4x4 I_ref;							// reference inertia
 
-	float linear_decay	= 0.999f;				// for velocity decay
-	float angular_decay	= 0.98f;				
+	[Range(0.5f, 0.999f)] 
+	public float linear_decay	= 0.999f;		// for velocity decay
+	[Range(0.5f, 0.98f)] 
+	public float angular_decay	= 0.98f;				
 	float restitution 	= 0.5f;                 // for collision
     float friction = 0.2f;
 
