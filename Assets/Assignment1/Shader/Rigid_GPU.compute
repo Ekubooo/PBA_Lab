@@ -1,42 +1,45 @@
-// MyRigidbody.compute
-#pragma kernel CSMain
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CollisionDetect
 
-struct RigidBodyData 
+struct PointData
 {
-    float3 position;
-    float3 velocity;
-    float3 angularVelocity;
-    float4 rotation;
+    float3 pPos;
+    bool isCollision;   // 1 Byte
 };
+// RWTexture2D<float4> Result;
 
-RWStructuredBuffer<RigidBodyData> rigidBodies;
+float3 PanelPos;
+float3 PanelNormal;
+float3 objVelocity;
+float3 objW;
 
-float3 gravity;
-float dt;
-float linear_decay;
-float angular_decay;
+float3x3 worldTrans;
+float3x3 qMatrix;
 
-[numthreads(1, 1, 1)]
-void CSMain(uint3 id : SV_DispatchThreadID)
+RWStructuredBuffer<PointData> cPoint;
+
+[numthreads(1,1,1)]
+void CollisionDetect (uint3 id : SV_DispatchThreadID)
 {
-    RigidBodyData rb = rigidBodies[id.x];
+    PointData thePoint  = cPoint[id.x];
+    float3 vertPos      = thePoint.pPos;
+    float3 xi           = mul(worldTrans, vertPos);
+    float sdf           = dot(xi - PanelPos,PanelNormal);
 
-    // Apply gravity
-    rb.velocity += gravity * dt;
+    uint cCounter       = 0;
+    float3 avgPoint     = float3(0.0f, 0.0f, 0.0f);
 
-    // Apply decay
-    rb.velocity *= linear_decay;
-    rb.angularVelocity *= angular_decay;
-
-    // Integrate position
-    rb.position += rb.velocity * dt;
-
-    // Integrate rotation (simple quaternion method)
-    float3 dw = 0.5f * dt * rb.angularVelocity;
-    float4 q = rb.rotation;
-    float4 qdw = float4(dw.x, dw.y, dw.z, 0.0);
-    rb.rotation = normalize(q + mul(qdw, q)); // Quaternion multiply
-
-    rigidBodies[id.x] = rb;
+    if (sdf < 0.0f)
+    {
+        float3 Rri = mul(qMatrix, vertPos);
+        float3 vi = objVelocity + cross(objW, Rri);
+        float viDotN = dot(vi,PanelNormal);
+        if(viDotN < 0.0f)
+        {
+            thePoint.isCollision = true;
+            avgPoint += thePoint.pPos;
+            cCounter += 1; 
+        }
+    }
+    cPoint[id.x] = thePoint;
 }
-

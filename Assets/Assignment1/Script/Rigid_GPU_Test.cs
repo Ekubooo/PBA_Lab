@@ -12,7 +12,7 @@ public class Rigid_GPU_Test : MonoBehaviour
         public Vector3 angularVelocity;
         public Quaternion rotation;
     }
-
+    
     public ComputeShader computeShader;
     public Transform targetTransform;
 
@@ -27,7 +27,6 @@ public class Rigid_GPU_Test : MonoBehaviour
     public float angularDecay   = 0.98f;
     public Vector3 gravity      = new Vector3(0, -9.8f, 0);
 	bool launched 		        = false;
-
 
     void Start()
     {
