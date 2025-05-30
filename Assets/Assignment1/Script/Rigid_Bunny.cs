@@ -16,7 +16,7 @@ public class Rigid_Bunny : MonoBehaviour
 	float linear_decay	= 0.999f;				// for velocity decay
 	float angular_decay	= 0.98f;				
 	float restitution 	= 0.5f;                 // for collision
-    float friction = 0.2f;
+    float friction 		= 0.2f;
 
     Mesh mesh;
     Vector3[] vertices;
