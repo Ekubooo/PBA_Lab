@@ -174,7 +174,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 833660}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b428ebecbc16bc64a9a9f2c7004fd0e3, type: 3}
   m_Name: 
@@ -196,9 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc9ee457a13b7e44ba8e0ac3284f1aa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravity: {x: 0, y: -9.8, z: 0}
-  wind: {x: 5, y: 0, z: -3}
-  computeShader: {fileID: 0}
+  computeShader: {fileID: 7200000, guid: 8238912e91fe0a5428c0b8e19f5a4e80, type: 3}
   linear_decay: 0.999
   angular_decay: 0.98
 --- !u!4 &177019510 stripped
@@ -222,7 +220,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &478076530
 Transform:
   m_ObjectHideFlags: 0
@@ -245,7 +243,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 478076528}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d023dc3499362c746ba193bc5f49d8fb, type: 3}
   m_Name: 

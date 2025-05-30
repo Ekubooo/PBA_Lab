@@ -4,9 +4,14 @@
 struct PointData
 {
     float3 pPos;
-    bool isCollision;   // 1 Byte
+    int isCollision;   // 1 Byte
 };
-// RWTexture2D<float4> Result;
+
+struct GlobalData
+{
+    float3 avgPoint;
+	int cCounter ;
+};
 
 float3 PanelPos;
 float3 PanelNormal;
@@ -15,19 +20,17 @@ float3 objW;
 
 float3x3 worldTrans;
 float3x3 qMatrix;
-
 RWStructuredBuffer<PointData> cPoint;
+RWStructuredBuffer<GlobalData> gData;
 
 [numthreads(1,1,1)]
 void CollisionDetect (uint3 id : SV_DispatchThreadID)
 {
     PointData thePoint  = cPoint[id.x];
+    GlobalData theGd    = gData[id.x];
     float3 vertPos      = thePoint.pPos;
     float3 xi           = mul(worldTrans, vertPos);
     float sdf           = dot(xi - PanelPos,PanelNormal);
-
-    uint cCounter       = 0;
-    float3 avgPoint     = float3(0.0f, 0.0f, 0.0f);
 
     if (sdf < 0.0f)
     {
@@ -36,9 +39,9 @@ void CollisionDetect (uint3 id : SV_DispatchThreadID)
         float viDotN = dot(vi,PanelNormal);
         if(viDotN < 0.0f)
         {
-            thePoint.isCollision = true;
-            avgPoint += thePoint.pPos;
-            cCounter += 1; 
+            thePoint.isCollision = 1;
+            theGd.avgPoint += thePoint.pPos;
+            theGd.cCounter += 1; 
         }
     }
     cPoint[id.x] = thePoint;
