@@ -40,8 +40,6 @@ public class Rigid_GPU : MonoBehaviour
 		public Vector3 avgPoint;
 		public int cCounter;
 	};
-
-	PointData[] cPointArray; 	// how to use index of this array?
     ComputeBuffer DetectBuffer;
     ComputeBuffer globalDBuffer;
 
@@ -75,6 +73,7 @@ public class Rigid_GPU : MonoBehaviour
 
 		DetectBuffer 	= new ComputeBuffer(vertices.Length, 16);
 		globalDBuffer 	= new ComputeBuffer(1, 16);
+
 
 		PointData[] PointDatas	= new PointData[vertices.Length];
 		GlobalData[] theOnly = new GlobalData[1];
@@ -149,7 +148,9 @@ public class Rigid_GPU : MonoBehaviour
 		// setting CShader data ///////////////////////////////
 		computeShader.SetVector("PanelPos", Panel_pos);			
 		computeShader.SetVector("PanelNormal", Panel_normal);	
-		computeShader.SetVector("objVelocity", v);	
+		computeShader.SetVector("objVelocity", v);		
+		computeShader.SetVector("objW", w);		
+		computeShader.SetVector("objPos", x);		
 		computeShader.SetMatrix("worldTrans", transform.localToWorldMatrix);
 		computeShader.SetMatrix("qMatrix", q_matrix);
 
@@ -159,9 +160,9 @@ public class Rigid_GPU : MonoBehaviour
 			// it seems like you can't update point pos
 			// try not init in start(), get it here!
 			// do it in day2
-
 		// end setting ////////////////////////////////////////
-		// PointData[] outputP		= new PointData[vertices.Length];
+
+		// PointData[] outputP	= new PointData[vertices.Length];
 		GlobalData[] outputG 	= new GlobalData[1];
 		// DetectBuffer.GetData(outputP);
 		globalDBuffer.GetData(outputG);
@@ -282,7 +283,6 @@ public class Rigid_GPU : MonoBehaviour
 		}
 		if(Input.GetKey("b"))
 		{
-			// wind blow, but how?
 			windBlow = true;
 			launched = true;
 		}
@@ -305,10 +305,10 @@ public class Rigid_GPU : MonoBehaviour
 
 			// Part II: Collision Impulse
 			// how to use build_in func to iterate all plane in once?
-			Collision_Impulse_GPU("ground");
-			Collision_Impulse_GPU("backwall");
-			//Collision_Impulse("ground");
-			//Collision_Impulse("backwall");
+			//Collision_Impulse_GPU("ground");
+			//Collision_Impulse_GPU("backwall");
+			Collision_Impulse("ground");
+			Collision_Impulse("backwall");
 
 			// Part III: Update position & orientation
 			Vector3 x0 = transform.position;

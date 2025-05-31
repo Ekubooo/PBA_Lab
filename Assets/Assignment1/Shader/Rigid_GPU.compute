@@ -17,6 +17,7 @@ float3 PanelPos;
 float3 PanelNormal;
 float3 objVelocity;
 float3 objW;
+float3 objPos;
 
 float3x3 worldTrans;
 float3x3 qMatrix;
@@ -29,7 +30,7 @@ void CollisionDetect (uint3 id : SV_DispatchThreadID)
     PointData thePoint  = cPoint[id.x];
     GlobalData theGd    = gData[id.x];
     float3 vertPos      = thePoint.pPos;
-    float3 xi           = mul(worldTrans, vertPos);
+    float3 xi           = objPos + mul(worldTrans, vertPos);
     float sdf           = dot(xi - PanelPos,PanelNormal);
 
     if (sdf < 0.0f)
