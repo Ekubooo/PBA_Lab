@@ -180,7 +180,8 @@ public class Rigid_Test : MonoBehaviour
 			restitution = 0.5f;
 			launched = false;
 			windBlow = false;
-			v = new Vector3 (0, 0, 0);
+			//v = new Vector3 (0, 0, 0);
+			v = Vector3.zero;
 		}
 		if(Input.GetKey("f"))
 		{
