@@ -1,49 +1,40 @@
-// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CollisionDetect
-
-/* struct PointData
-{
-    float3 pPos;
-    int isCollision;   // 1 Byte
-}; */
 
 struct GlobalData
 {
     float3 avgPoint;
 	int cCounter;
 };
-int vertCount;
 
+int vertCount;
 float3 PanelPos;
 float3 PanelNormal;
 float3 objVelocity;
 float3 objW;
-float3 objPos;  // ?
 
-float3x3 worldTrans;
-float3x3 qMatrix;
+float4x4 qMatrix;
 RWStructuredBuffer<float3> cPoint;
 RWStructuredBuffer<GlobalData> gData;
 
-[numthreads(8,8,1)]
+[numthreads(1,1,1)]
 void CollisionDetect (uint3 id : SV_DispatchThreadID)
 {
     if (id.x > vertCount) return;
     float3 thePoint     = cPoint[id.x];
     GlobalData theGd    = gData[id.x];
-    // float3 xi           = objPos + mul(worldTrans, thePoint);
-    // float3 xi           = mul(worldTrans, thePoint);
-
-    float sdf           = dot(thePoint - PanelPos,PanelNormal);
-
+    float sdf           = dot(thePoint-PanelPos, PanelNormal);
     if (sdf < 0.0f)
-    {
-        float3 Rri = mul(qMatrix, thePoint);
+    {   
+        // float4 thePoint4 = float4(thePoint, 0.0f);
+        // float4 RriF = mul(qMatrix, thePoint4);  
+        // float3 Rri = float3(RriF.x, RriF.y, RriF.z);
+
+        float3 Rri = mul(qMatrix, thePoint);    
+
         float3 vi = objVelocity + cross(objW, Rri);
         float viDotN = dot(vi,PanelNormal);
         if(viDotN < 0.0f)
         {
-            // thePoint.isCollision = 1;
             theGd.avgPoint += thePoint;
             theGd.cCounter += 1; 
         }

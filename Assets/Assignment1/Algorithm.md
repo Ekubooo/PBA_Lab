@@ -1,4 +1,4 @@
-## Height Field Model
+## semi-implicit method for time integration
 ```
 begin
 Start()
@@ -24,8 +24,32 @@ Update()
 end
 ```
 
-
-
+## GPU 
+```
+begin
+Start()
+    calculate constant data 
+Update()
+    user interaction detect
+    damping the velocity 
+    /// collision impulse //////////////////////
+        get quaternion and store as matrix
+        for: every point on compute shader
+            collision detect by SDF
+            if collided: 
+                Accumulate the avg vector
+                counter++
+            calculate average point
+        calculate torque by average point
+        calculate collision point velocity by torque
+        decompose and recalculate point velocity 
+        calculate impulse by point velocity
+        update linear and angle velocity by impulse
+    /// collision impulse END //////////////////
+    update position and orientation
+    apply state data to object
+end
+```
         
         
 

@@ -26,15 +26,10 @@ public class Rigid_GPU : MonoBehaviour
     public ComputeShader computeShader;				// Computer Shader setting
 
 	[Range(0.5f, 0.999f)] 
-	public float linear_decay	= 0.999f;			// for velocity decay
+	/* public */ float linear_decay	= 0.999f;			// for velocity decay
 	[Range(0.5f, 0.98f)] 
-	public float angular_decay	= 0.98f;	
+	/* public */ float angular_decay	= 0.98f;	
 
-	public struct PointData
-	{
-		public Vector3 pPos;
-    	public int isCollision;
-	};
 	public struct GlobalData
 	{
 		public Vector3 avgPoint;
@@ -74,24 +69,8 @@ public class Rigid_GPU : MonoBehaviour
 
 		DetectBuffer 	= new ComputeBuffer(vertices.Length, 12);
 		globalDBuffer 	= new ComputeBuffer(1, 16);
-
-		//PointData[] PointDatas	= new PointData[vertices.Length];
-		
-		/* for(int i = 0; i < vertices.Length; i++)
-		{
-			PointDatas[i] = new PointData();
-			PointDatas[i].pPos = vertices[i];
-			PointDatas[i].isCollision = 0;
-		} 
-		// DetectBuffer.SetData(PointDatas);
-		GlobalData[] theOnly = new GlobalData[1];
-		theOnly[0].cCounter = 0;
-		theOnly[0].avgPoint = Vector3.zero;
-		DetectBuffer.SetData(vertices);
-		globalDBuffer.SetData(theOnly);
-		*/
 		kernelID = computeShader.FindKernel("CollisionDetect");
-		groupNum = Mathf.CeilToInt((float)vertices.Length / 64.0f);
+		groupNum = Mathf.CeilToInt((float)vertices.Length / 64);
 	}
 	
 	Matrix4x4 Get_Cross_Matrix(Vector3 a)
@@ -163,13 +142,13 @@ public class Rigid_GPU : MonoBehaviour
 		computeShader.SetVector("objVelocity", v);		
 		computeShader.SetVector("objW", w);		
 		computeShader.SetVector("objPos", transform.position);		
-		computeShader.SetMatrix("worldTrans", transform.localToWorldMatrix);
+		// computeShader.SetMatrix("worldTrans", transform.localToWorldMatrix);
 		computeShader.SetMatrix("qMatrix", q_matrix);
 
 		computeShader.SetBuffer(kernelID, "cPoint", DetectBuffer);	
 		computeShader.SetBuffer(kernelID, "gData", globalDBuffer);	
-		// computeShader.Dispatch(kernelID, 1, 1, 1);	
-		computeShader.Dispatch(kernelID, groupNum, 1, 1);	
+		// computeShader.Dispatch(kernelID, groupNum, 1, 1);	
+		computeShader.Dispatch(kernelID, 1, 1, 1);	
 		// end setting ////////////////////////////////////////
 
 		GlobalData[] outputG 	= new GlobalData[1];
@@ -234,7 +213,6 @@ public class Rigid_GPU : MonoBehaviour
 
 		if (launched)
 		{
-			// Part I: Update velocities
 			if(windBlow) 
 				v += dt * wind; 
 			v += dt * gravity;
