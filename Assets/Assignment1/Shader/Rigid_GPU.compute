@@ -1,5 +1,10 @@
 #pragma kernel CollisionDetect
 
+struct PointData
+{
+    float3 pPos;
+	int isCollision;
+};
 struct GlobalData
 {
     float3 avgPoint;
@@ -11,30 +16,32 @@ float3 PanelPos;
 float3 PanelNormal;
 float3 objVelocity;
 float3 objW;
-
 float4x4 qMatrix;
+
 RWStructuredBuffer<float3> cPoint;
+RWStructuredBuffer<PointData> pointSet;
 RWStructuredBuffer<GlobalData> gData;
 
 [numthreads(1,1,1)]
 void CollisionDetect (uint3 id : SV_DispatchThreadID)
 {
     if (id.x > vertCount) return;
-    float3 thePoint     = cPoint[id.x];
+    // float3 thePoint     = cPoint[id.x];
+    float3 thePoint     = pointSet[id.x].pPos;
     GlobalData theGd    = gData[id.x];
     float sdf           = dot(thePoint-PanelPos, PanelNormal);
     if (sdf < 0.0f)
     {   
-        // float4 thePoint4 = float4(thePoint, 0.0f);
-        // float4 RriF = mul(qMatrix, thePoint4);  
-        // float3 Rri = float3(RriF.x, RriF.y, RriF.z);
-
         float3 Rri = mul(qMatrix, thePoint);    
+        // task: check this qmatrix shit
 
         float3 vi = objVelocity + cross(objW, Rri);
         float viDotN = dot(vi,PanelNormal);
         if(viDotN < 0.0f)
         {
+            // method 1
+            pointSet[id.x].isCollision = 1;
+            // method 2
             theGd.avgPoint += thePoint;
             theGd.cCounter += 1; 
         }

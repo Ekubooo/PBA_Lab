@@ -126,9 +126,11 @@ public class Rigid_Test : MonoBehaviour
 				// if obj keeps going inside of plane (vi direction to inside of plane)
 				// try to change it until vi are going outside of plane
                 float viDotN = Vector3.Dot(vi, Panel_normal);
-				if(viDotN < 0.0f)			
+				if(viDotN < 0.0f)	
+				{		
 					CollisionPoints.Add(vertices[i]);
-            }
+            	}
+			}
         }
 
 		if (CollisionPoints.Count == 0) return;
