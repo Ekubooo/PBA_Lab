@@ -109,7 +109,7 @@ public class Rigid_Test : MonoBehaviour
 
 		List<Vector3> CollisionPoints = new List<Vector3>();
 		// Quaternion transform to matrix ,the R of Rr_i Rri
-		Matrix4x4 q_matrix = Matrix4x4.Rotate(q);
+		Matrix4x4 q_matrix = Matrix4x4.Rotate(transform.rotation);
 
         for (int i = 0; i < vertices.Length; i++)
 		{

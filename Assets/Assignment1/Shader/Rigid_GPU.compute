@@ -26,16 +26,15 @@ RWStructuredBuffer<GlobalData> gData;
 void CollisionDetect (uint3 id : SV_DispatchThreadID)
 {
     if (id.x > vertCount) return;
-    // float3 thePoint     = cPoint[id.x];
-    float3 thePoint     = pointSet[id.x].pPos;
-    GlobalData theGd    = gData[id.x];
-    float sdf           = dot(thePoint-PanelPos, PanelNormal);
-    if (sdf < 0.0f)
+    float3 thePoint  = cPoint[id.x];        // vertices[]
+    float3 xi        = pointSet[id.x].pPos; // xi transformPoint
+    GlobalData theGd = gData[id.x];
+    float sdf        = dot(xi-PanelPos, PanelNormal);
+    if (sdf <= 0.0f)
     {   
-        float3 Rri = mul(qMatrix, thePoint);    
-        // task: check this qmatrix shit
-
-        float3 vi = objVelocity + cross(objW, Rri);
+        // not thePoint , is vertices[]
+        float3 Rri = mul(qMatrix, thePoint);   
+        float3 vi = objVelocity + cross(Rri, objW);
         float viDotN = dot(vi,PanelNormal);
         if(viDotN < 0.0f)
         {
@@ -46,6 +45,5 @@ void CollisionDetect (uint3 id : SV_DispatchThreadID)
             theGd.cCounter += 1; 
         }
     }
-    cPoint[id.x] = thePoint;
     gData[id.x] = theGd;
 }

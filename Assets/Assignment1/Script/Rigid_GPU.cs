@@ -17,16 +17,16 @@ public class Rigid_GPU : MonoBehaviour
 	Vector3 v 			= new Vector3(0, 0, 0);	// velocity
 	Vector3 w 			= new Vector3(0, 0, 0);	// angular velocity
 
-	Matrix4x4 I_ref;								// reference inertia
+	Matrix4x4 I_ref;							// reference inertia
 	Mesh mesh;
 	Quaternion q;
 
     Vector3 gravity 	= new Vector3(0.0f, -9.8f, 0.0f);
     Vector3 wind 		= new Vector3(5.0f, 0.0f, -3.0f);
-    public ComputeShader computeShader;				// Computer Shader setting
+    public ComputeShader computeShader;			
 
 	[Range(0.5f, 0.999f)] 
-	/* public */ float linear_decay	= 0.999f;			// for velocity decay
+	/* public */ float linear_decay		= 0.999f;		
 	[Range(0.5f, 0.98f)] 
 	/* public */ float angular_decay	= 0.98f;	
 
@@ -75,8 +75,9 @@ public class Rigid_GPU : MonoBehaviour
 		}
 		I_ref [3, 3] = 1;
 
+		int structSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(PointData));
 		DetectBuffer 	= new ComputeBuffer(vLength, 12);
-		PointBuffer 	= new ComputeBuffer(vLength, 16);
+		PointBuffer 	= new ComputeBuffer(vLength, structSize);
 		globalDBuffer 	= new ComputeBuffer(1, 16); 
 		kernelID = computeShader.FindKernel("CollisionDetect");
 		groupNum = Mathf.CeilToInt((float)vLength / 64);
@@ -130,7 +131,7 @@ public class Rigid_GPU : MonoBehaviour
 		GameObject GoPanel = GameObject.Find(GamePanel);
 		Vector3 Panel_pos = GoPanel.transform.position;
 	  	Vector3 Panel_normal = GoPanel.transform.up;
-		Matrix4x4 q_matrix = Matrix4x4.Rotate(q);
+		Matrix4x4 q_matrix = Matrix4x4.Rotate(transform.rotation);
 
 		// set buffer
 		Vector3[] vertPos = new Vector3[vertices.Length];
@@ -141,7 +142,7 @@ public class Rigid_GPU : MonoBehaviour
 		theOnly[0].avgPoint = Vector3.zero;
 		for(int i = 0; i< vertices.Length; i++)
 		{
-        	vertPos[i] = transform.TransformPoint(vertices[i]); 
+        	vertPos[i] = vertices[i]; 
 			pData[i].pointPos = transform.TransformPoint(vertices[i]);
 			pData[i].isCollision = 0;
 		}
@@ -336,10 +337,8 @@ public class Rigid_GPU : MonoBehaviour
 
 	void OnDestroy() 
 	{
-        DetectBuffer.Release();
         DetectBuffer.Dispose();
-		
-		globalDBuffer.Release();
+        PointBuffer.Dispose();
         globalDBuffer.Dispose();
     }
 }
