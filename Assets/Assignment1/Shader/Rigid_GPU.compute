@@ -12,38 +12,38 @@ struct GlobalData
 };
 
 int vertCount;
-float3 PanelPos;
-float3 PanelNormal;
-float3 objVelocity;
-float3 objW;
+float4 PanelPos;
+float4 PanelNormal;
+float4 objVelocity;
+float4 objW;
 float4x4 qMatrix;
 
 RWStructuredBuffer<float3> cPoint;
 RWStructuredBuffer<PointData> pointSet;
 RWStructuredBuffer<GlobalData> gData;
 
-[numthreads(1,1,1)]
-void CollisionDetect (uint3 id : SV_DispatchThreadID)
+[numthreads(8,8,8)]
+void CollisionDetect(uint3 id : SV_DispatchThreadID)
 {
     if (id.x > vertCount) return;
     float3 thePoint  = cPoint[id.x];        // vertices[]
-    float3 xi        = pointSet[id.x].pPos; // xi transformPoint
+    PointData xi     = pointSet[id.x];
+    // float3 xi        = pointSet[id.x].pPos; // xi transformPoint
     GlobalData theGd = gData[id.x];
-    float sdf        = dot(xi-PanelPos, PanelNormal);
+    float sdf        = dot(xi.pPos - PanelPos.xyz, PanelNormal.xyz);
     if (sdf <= 0.0f)
     {   
-        // not thePoint , is vertices[]
-        float3 Rri = mul(qMatrix, thePoint);   
-        float3 vi = objVelocity + cross(Rri, objW);
-        float viDotN = dot(vi,PanelNormal);
-        if(viDotN < 0.0f)
+        float3 Rri   = mul(qMatrix, thePoint);   
+        float3 vi    = objVelocity.xyz + cross(Rri, objW.xyz);
+        if(dot(vi,PanelNormal.xyz) < 0.0f)
         {
             // method 1
-            pointSet[id.x].isCollision = 1;
+            xi.isCollision = 1;
             // method 2
             theGd.avgPoint += thePoint;
             theGd.cCounter += 1; 
         }
     }
-    gData[id.x] = theGd;
+    gData[id.x]     = theGd;
+    pointSet[id.x]  = xi;
 }

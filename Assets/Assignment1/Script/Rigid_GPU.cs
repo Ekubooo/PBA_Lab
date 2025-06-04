@@ -77,7 +77,7 @@ public class Rigid_GPU : MonoBehaviour
 
 		int structSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(PointData));
 		DetectBuffer 	= new ComputeBuffer(vLength, 12);
-		PointBuffer 	= new ComputeBuffer(vLength, structSize);
+		PointBuffer 	= new ComputeBuffer(vLength, 16);
 		globalDBuffer 	= new ComputeBuffer(1, 16); 
 		kernelID = computeShader.FindKernel("CollisionDetect");
 		groupNum = Mathf.CeilToInt((float)vLength / 64);
@@ -131,6 +131,12 @@ public class Rigid_GPU : MonoBehaviour
 		GameObject GoPanel = GameObject.Find(GamePanel);
 		Vector3 Panel_pos = GoPanel.transform.position;
 	  	Vector3 Panel_normal = GoPanel.transform.up;
+
+		Vector4 PanelPos = Panel_pos;
+		Vector4 PanelNormal = Panel_normal;
+		Vector4 objVelocity = v;
+		Vector4 objW = w;
+		
 		Matrix4x4 q_matrix = Matrix4x4.Rotate(transform.rotation);
 
 		// set buffer
@@ -152,10 +158,10 @@ public class Rigid_GPU : MonoBehaviour
 		globalDBuffer.SetData(theOnly);
 		
 		computeShader.SetInt("vertCount", vertices.Length);			
-		computeShader.SetVector("PanelPos", Panel_pos);			
-		computeShader.SetVector("PanelNormal", Panel_normal);	
-		computeShader.SetVector("objVelocity", v);		
-		computeShader.SetVector("objW", w);		
+		computeShader.SetVector("PanelPos", PanelPos);			
+		computeShader.SetVector("PanelNormal", PanelNormal);	
+		computeShader.SetVector("objVelocity", objVelocity);		
+		computeShader.SetVector("objW", objW);		
 		computeShader.SetMatrix("qMatrix", q_matrix);
 		// computeShader.SetVector("objPos", transform.position);		
 
@@ -163,7 +169,7 @@ public class Rigid_GPU : MonoBehaviour
 		computeShader.SetBuffer(kernelID, "pointSet", PointBuffer);	
 		computeShader.SetBuffer(kernelID, "gData", globalDBuffer);	
 		// computeShader.Dispatch(kernelID, groupNum, 1, 1);	
-		computeShader.Dispatch(kernelID, 1, 1, 1);	
+		computeShader.Dispatch(kernelID, 8, 8, 1);	
 		// end setting ////////////////////////////////////////
 
 		GlobalData[] outputG = new GlobalData[1];
@@ -176,7 +182,7 @@ public class Rigid_GPU : MonoBehaviour
 		*/
 		Vector3 avgPoint = Vector3.zero;
 		int cCounter = 0;
-		for(int i=0; i<outputP.Length; i++)
+		for(int i=0; i<outputP.Length; ++i)
 		{
 			if(outputP[i].isCollision != 0)	
 			{
@@ -185,7 +191,7 @@ public class Rigid_GPU : MonoBehaviour
 			}
 		}
 		if (cCounter == 0) return;
-		avgPoint /= cCounter;
+		avgPoint /= (float)cCounter;
 
 		Vector3 R_length = q_matrix.MultiplyVector(avgPoint);
 		Vector3 CpVelocity = v + Vector3.Cross(w, R_length);
