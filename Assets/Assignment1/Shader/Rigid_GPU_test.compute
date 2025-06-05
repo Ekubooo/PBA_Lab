@@ -1,7 +1,8 @@
 // RigidBodyCollision.compute
 #pragma kernel CSMain
 
-struct RigidBodyData {
+struct RigidBodyData 
+{
     float3 position;
     float3 velocity;
     float3 angularVelocity;

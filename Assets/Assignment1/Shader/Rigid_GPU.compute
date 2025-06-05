@@ -44,6 +44,7 @@ void CollisionDetect(uint3 id : SV_DispatchThreadID)
             theGd.cCounter += 1; 
         }
     }
+    cPoint[id.x]    = thePoint;
     gData[id.x]     = theGd;
     pointSet[id.x]  = xi;
 }

@@ -34,12 +34,12 @@ public class Rigid_GPU : MonoBehaviour
 	{
 		public Vector3 pointPos;
 		public int isCollision;
-	};
+	}
 	public struct GlobalData
 	{
 		public Vector3 avgPoint;
 		public int cCounter;
-	};
+	}
 
     ComputeBuffer DetectBuffer;
     ComputeBuffer PointBuffer;
@@ -80,7 +80,7 @@ public class Rigid_GPU : MonoBehaviour
 		PointBuffer 	= new ComputeBuffer(vLength, 16);
 		globalDBuffer 	= new ComputeBuffer(1, 16); 
 		kernelID = computeShader.FindKernel("CollisionDetect");
-		groupNum = Mathf.CeilToInt((float)vLength / 64);
+		groupNum = Mathf.CeilToInt((float)vLength / 1000.0f);
 	}
 	
 	Matrix4x4 Get_Cross_Matrix(Vector3 a)
@@ -153,6 +153,7 @@ public class Rigid_GPU : MonoBehaviour
 			pData[i].isCollision = 0;
 		}
 		// setting CShader data ///////////////////////////////
+		// should you read the buffer out, and not to cover it by setData?
 		DetectBuffer.SetData(vertPos);
 		PointBuffer.SetData(pData);
 		globalDBuffer.SetData(theOnly);
@@ -168,8 +169,8 @@ public class Rigid_GPU : MonoBehaviour
 		computeShader.SetBuffer(kernelID, "cPoint", DetectBuffer);	
 		computeShader.SetBuffer(kernelID, "pointSet", PointBuffer);	
 		computeShader.SetBuffer(kernelID, "gData", globalDBuffer);	
-		// computeShader.Dispatch(kernelID, groupNum, 1, 1);	
-		computeShader.Dispatch(kernelID, 8, 8, 1);	
+		computeShader.Dispatch(kernelID, groupNum, 1, 1);	
+		// computeShader.Dispatch(kernelID, 1, 1, 1);	
 		// end setting ////////////////////////////////////////
 
 		GlobalData[] outputG = new GlobalData[1];
@@ -182,12 +183,12 @@ public class Rigid_GPU : MonoBehaviour
 		*/
 		Vector3 avgPoint = Vector3.zero;
 		int cCounter = 0;
-		for(int i=0; i<outputP.Length; ++i)
+		for(int i = 0; i<outputP.Length; i++)
 		{
 			if(outputP[i].isCollision != 0)	
 			{
 				avgPoint += outputP[i].pointPos;
-				cCounter++;
+				cCounter += 1;
 			}
 		}
 		if (cCounter == 0) return;
@@ -221,7 +222,7 @@ public class Rigid_GPU : MonoBehaviour
 		Vector3 Panel_normal = GoPanel.transform.up;
 
 		// List<Vector3> CollisionPoints = new List<Vector3>();
-		Matrix4x4 q_matrix = Matrix4x4.Rotate(q);
+		Matrix4x4 q_matrix = Matrix4x4.Rotate(transform.rotation);
 
 		Vector3 avgPoint = Vector3.zero;
 		uint cCounter = 0;
