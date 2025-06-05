@@ -1,9 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿// RigidBunnyControllerWithCollision.cs
+using UnityEngine;
 
-public class Rigid_GPU_Test : MonoBehaviour 
+public class RigidBunnyControllerWithCollision : MonoBehaviour
 {
     struct RigidBodyData
     {
@@ -12,21 +10,19 @@ public class Rigid_GPU_Test : MonoBehaviour
         public Vector3 angularVelocity;
         public Quaternion rotation;
     }
-    
+
     public ComputeShader computeShader;
     public Transform targetTransform;
 
     ComputeBuffer buffer;
     RigidBodyData[] rbDataArray;
 
-    [Range(0.01f, 0.015f)]  
-    public float dt             = 0.015f;
-    [Range(0.5f, 0.999f)]   
-    public float linearDecay    = 0.999f;
-    [Range(0.5f, 0.98f)]    
-    public float angularDecay   = 0.98f;
-    public Vector3 gravity      = new Vector3(0, -9.8f, 0);
-	bool launched 		        = false;
+    public float dt = 0.015f;
+    public float linearDecay = 0.999f;
+    public float angularDecay = 0.98f;
+    public Vector3 gravity = new Vector3(0, -9.8f, 0);
+    public float restitution = 0.5f;
+    public float groundHeight = 0.0f;
 
     void Start()
     {
@@ -42,33 +38,19 @@ public class Rigid_GPU_Test : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKey("r"))
-		{
-			// transform.position = new Vector3 (0, 0.6f, 0);
-            rbDataArray[0].position = new Vector3 (0, 0.6f, 0);
-			// restitution = 0.5f;          // unfinish
-			launched = false;
-		}
-		if(Input.GetKey("l"))
-		{
-			// v = new Vector3 (5, 2, 0);   // unfinish
-            rbDataArray[0].velocity = new Vector3(5, 2, 0);
-			launched = true;
-		}
-        if(launched)
-        {
-            computeShader.SetFloat("dt", dt);
-            computeShader.SetFloat("linear_decay", linearDecay);
-            computeShader.SetFloat("angular_decay", angularDecay);
-            computeShader.SetVector("gravity", gravity);
-            computeShader.SetBuffer(0, "rigidBodies", buffer);
+        computeShader.SetFloat("dt", dt);
+        computeShader.SetFloat("linear_decay", linearDecay);
+        computeShader.SetFloat("angular_decay", angularDecay);
+        computeShader.SetFloat("restitution", restitution);
+        computeShader.SetVector("gravity", gravity);
+        computeShader.SetFloat("groundHeight", groundHeight);
+        computeShader.SetBuffer(0, "rigidBodies", buffer);
 
-            computeShader.Dispatch(0, 1, 1, 1);
+        computeShader.Dispatch(0, 1, 1, 1);
 
-            buffer.GetData(rbDataArray);
-            targetTransform.position = rbDataArray[0].position;
-            targetTransform.rotation = rbDataArray[0].rotation;
-        }
+        buffer.GetData(rbDataArray);
+        targetTransform.position = rbDataArray[0].position;
+        targetTransform.rotation = rbDataArray[0].rotation;
     }
 
     void OnDestroy()
