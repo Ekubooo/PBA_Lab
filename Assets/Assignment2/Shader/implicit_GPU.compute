@@ -1,0 +1,60 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel forceGradient
+#pragma kernel springGradient
+#pragma kernel updateX
+#pragma kernel updateV
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+float t;
+float mass;
+float spring_k;
+float omega;
+float3 gravityConst = (0,9.8f,0);
+float4 forcesC;
+
+RWStructuredBuffer<float3> _X;
+RWStructuredBuffer<float3> _X_hat;
+RWStructuredBuffer<float3> _Gradient;
+RWStructuredBuffer<float3> _Velocity;
+RWStructuredBuffer<float3> _Last_X;
+
+RWStructuredBuffer<int> _EDGE;
+RWStructuredBuffer<float> _LENGTH;
+
+[numthreads(8,8,1)]
+void forceGradient (uint3 id : SV_DispatchThreadID)
+{
+    if(id.x > _Gradient.Length) return;
+	_Gradient[id.x] = (mass/(t*t)) * (_X[id.x] - _X_hat[id.x]) - mass * forcesC.xyz;
+}
+
+[numthreads(8,8,1)]
+void springGradient (uint3 id : SV_DispatchThreadID)
+{
+    if(id.x > _EDGE.Length) return;
+    int i = _EDGE[id.x * 2 + 0]; //E[e * 2 + 0];
+	int j = _EDGE[id.x * 2 + 1]; //E[e * 2 + 1];
+
+	float3 f = spring_k * (1 - normalize(_LENGTH[id.x]/(_X[i] - _X[j]))) * (_X[i] - _X[j]);
+
+	_Gradient[i] += f;
+	_Gradient[j] -= f;
+}
+
+[numthreads(8,8,1)]
+void updateX (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x == 0 || id.x == 20) return;
+    float3 X_new = omega * (_X[id.x] - 1/(mass/(t*t) + 4*spring_k) * _Gradient[id.x]) 
+        + (1 - omega) * _Last_X[id.x];
+    _Last_X[id.x] = _X[id.x];
+    _X[id.x] = X_new;
+}
+
+[numthreads(8,8,1)]
+void updateV (uint3 id : SV_DispatchThreadID)
+{
+	_Velocity[id.x] += (_X[id.x] - _X_hat[id.x]) / t;
+}
