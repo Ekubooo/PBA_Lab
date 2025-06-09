@@ -28,7 +28,9 @@ public class implicit_GPU : MonoBehaviour
 
 	int ID_forceGradient;
 	int ID_springGradient;
-	int groupNumV;
+	int ID_updateX;
+	int ID_updateV;
+	int groupNumX;
 	int groupNumE;
 
     // Start is called before the first frame update
@@ -120,7 +122,9 @@ public class implicit_GPU : MonoBehaviour
 
 		ID_forceGradient 	= _CS.FindKernel("forceGradient");
 		ID_springGradient 	= _CS.FindKernel("springGradient");
-		groupNumV 			= Mathf.CeilToInt((float)_XLength / 64.0f);
+		ID_updateX 	= _CS.FindKernel("updateX");
+		ID_updateV 	= _CS.FindKernel("updateV");
+		groupNumX 			= Mathf.CeilToInt((float)_XLength / 64.0f);
 		groupNumE 			= Mathf.CeilToInt((float)_ELength / 64.0f);
     }
 
@@ -208,7 +212,7 @@ public class implicit_GPU : MonoBehaviour
 		}
 	}
 
-	void GPU_Gradient(Vector3[] X, Vector3[] X_hat, float t, Vector3[] G)
+	void GPU_Gradient(Vector3[] X, Vector3[] X_hat, float t, Vector3[] G, float omega)
 	{
 		Vector3 outForce = Vector3.zero;
 		Vector4 totalForce = gravityConst + outForce;
@@ -228,16 +232,36 @@ public class implicit_GPU : MonoBehaviour
 		_CS.SetFloat("t", t);
 		_CS.SetFloat("mass", mass);
 		_CS.SetFloat("spring_k", spring_k);
+		_CS.SetFloat("omega", omega);
 		_CS.SetVector("forcesC", totalForce4);
-		_CS.Dispatch(ID_forceGradient, groupNumV, 1, 1);	
+		_CS.Dispatch(ID_forceGradient, groupNumX, 1, 1);	
 
 		_CS.SetFloat("edgeCount",E.Length);
 		_CS.Dispatch(ID_springGradient, groupNumE, 1, 1);
-
-		_GRADIENT.GetData(G);
+		_GRADIENT.GetData(G);	//?
 	}
-    // Update is called once per frame
-	void Update () 
+
+	/* 
+	void Initial()
+	{
+		_X.SetData(X);
+		_X_HAT.SetData(X_hat);
+		_GRADIENT.SetData(G);
+		_EDGE.SetData(E);
+		_LENGTH.SetData(L);
+		_CS.SetBuffer(ID_forceGradient, "_X", _X);	
+		_CS.SetBuffer(ID_forceGradient, "_X_hat", _X_HAT);	
+		_CS.SetBuffer(ID_forceGradient, "_GRADIENT", _GRADIENT);
+
+		_CS.SetBuffer(ID_forceGradient, "_EDGE", _EDGE);
+		_CS.SetBuffer(ID_forceGradient, "_LENGTH", _LENGTH);	
+
+		_CS.SetFloat("t", t);
+		_CS.SetFloat("mass", mass);
+		_CS.SetFloat("spring_k", spring_k);
+	} */
+
+	void UpdatePrivious () 
 	{
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Vector3[] X 		= mesh.vertices;
@@ -265,7 +289,6 @@ public class implicit_GPU : MonoBehaviour
 
 			// (x, x guass, time step, Gradient of every point)
 			Get_Gradient(X, X_hat, t, G);
-
 			//Update X by gradient.
 			for(int i = 0; i < X.Length; i++)
 			{
@@ -279,12 +302,78 @@ public class implicit_GPU : MonoBehaviour
 					(1 - omega) * last_X[i];
 				last_X[i] = X[i];
 				X[i] = X_new;
-			}
+			} 
 		}
 		// =============================================
-
 		for(int i = 0; i < X.Length; i++)
 			V[i] += (X[i] - X_hat[i]) / t;
+		
+		//Finishing.
+		mesh.vertices = X;
+		Collision_Handling ();
+		mesh.RecalculateNormals ();
+	}
+
+	void Update () 		// GPU version
+	{
+		Mesh mesh = GetComponent<MeshFilter> ().mesh;
+		Vector3[] X 		= mesh.vertices;
+		Vector3[] last_X 	= new Vector3[X.Length];
+		Vector3[] X_hat 	= new Vector3[X.Length];
+		Vector3[] G 		= new Vector3[X.Length];
+
+		Vector3 outForce = Vector3.zero;
+		Vector4 totalForce = gravityConst + outForce;
+		Vector4 totalForce4 = new Vector4(totalForce.x,totalForce.y,totalForce.z, 0.0f);
+
+		// 01 Initial Setup.
+		for (int i = 0; i < X.Length; i++)
+		{
+			V[i] *= damping;
+			X_hat[i] = X[i] + t*V[i];
+			// X[i] = X_hat[i] = X[i] + t*V[i];
+			X[i] = X_hat[i];
+		}
+		// Initial();
+		_X.SetData(X);
+		_X_HAT.SetData(X_hat);
+		_GRADIENT.SetData(G);
+		_EDGE.SetData(E);
+		_LENGTH.SetData(L);
+		_CS.SetBuffer(ID_forceGradient, "_X", _X);	
+		_CS.SetBuffer(ID_forceGradient, "_X_hat", _X_HAT);	
+		_CS.SetBuffer(ID_forceGradient, "_GRADIENT", _GRADIENT);
+		_CS.SetBuffer(ID_forceGradient, "_EDGE", _EDGE);
+		_CS.SetBuffer(ID_forceGradient, "_LENGTH", _LENGTH);	
+
+		_CS.SetFloat("t", t);
+		_CS.SetFloat("mass", mass);
+		_CS.SetFloat("spring_k", spring_k);
+		_CS.SetFloat("edgeCount",E.Length);
+
+		_CS.SetVector("forcesC", totalForce4);
+		// =============================================
+		// 02 calculate 
+		float omega = 1.0f;
+		for(int k=0; k<32; k++)
+		{
+			if (k == 0)			omega = 1.0f;
+			else if (k == 1)	omega = 2.0f / (2.0f - rho * rho);
+			else			 	omega = 4.0f / (4.0f - rho * rho * omega);
+
+			// GPU_Gradient(X, X_hat, t, G, omega);
+			_CS.SetFloat("omega", omega);
+			_CS.Dispatch(ID_forceGradient, groupNumX, 1, 1);	
+			_CS.Dispatch(ID_springGradient, groupNumE, 1, 1);
+
+			//Update X by gradient.
+			_CS.Dispatch(ID_updateX, groupNumX, 1, 1);
+		}
+		// =============================================
+		_CS.Dispatch(ID_updateV, groupNumX, 1, 1);
+
+		// 03 pull out data here
+		_GRADIENT.GetData(X);
 
 		//Finishing.
 		mesh.vertices = X;
