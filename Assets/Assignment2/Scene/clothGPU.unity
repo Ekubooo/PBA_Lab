@@ -430,6 +430,7 @@ GameObject:
   - component: {fileID: 706584443}
   - component: {fileID: 706584446}
   - component: {fileID: 706584445}
+  - component: {fileID: 706584447}
   m_Layer: 0
   m_Name: cloth
   m_TagString: Untagged
@@ -567,7 +568,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 706584436}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 81c9f6f3f4222b8409c1da8719ba643c, type: 3}
   m_Name: 
@@ -584,6 +585,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64416d713db86c64abea923ad1061a46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &706584447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 706584436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc87ea89f7b3dd241a8d82f36f827806, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _CS: {fileID: 7200000, guid: 3c2dd6d3261e68b4fa9aae34828b5213, type: 3}
 --- !u!1 &1226803542
 GameObject:
   m_ObjectHideFlags: 0

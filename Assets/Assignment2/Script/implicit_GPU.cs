@@ -22,6 +22,8 @@ public class implicit_GPU : MonoBehaviour
 	ComputeBuffer _X;
 	ComputeBuffer _X_HAT;
 	ComputeBuffer _GRADIENT;
+	ComputeBuffer _VELOCITY;
+	ComputeBuffer _LAST_X;
 
 	ComputeBuffer _EDGE;
 	ComputeBuffer _LENGTH;
@@ -117,13 +119,16 @@ public class implicit_GPU : MonoBehaviour
 		_X 			= new ComputeBuffer(_XLength, 12);	// Vector3
 		_X_HAT 		= new ComputeBuffer(_XLength, 12);	// Vector3
 		_GRADIENT 	= new ComputeBuffer(_XLength, 12); 	// Vector3
-		_EDGE 		= new ComputeBuffer(_XLength, 4);	// int
-		_LENGTH 	= new ComputeBuffer(_XLength, 4);	// float
+		_VELOCITY 	= new ComputeBuffer(_XLength, 12); 	// Vector3
+		_LAST_X 	= new ComputeBuffer(_XLength, 12); 	// Vector3
+
+		_EDGE 		= new ComputeBuffer(E.Length, 4);	// int
+		_LENGTH 	= new ComputeBuffer(L.Length, 4);	// float
 
 		ID_forceGradient 	= _CS.FindKernel("forceGradient");
 		ID_springGradient 	= _CS.FindKernel("springGradient");
-		ID_updateX 	= _CS.FindKernel("updateX");
-		ID_updateV 	= _CS.FindKernel("updateV");
+		ID_updateX 			= _CS.FindKernel("updateX");
+		ID_updateV 			= _CS.FindKernel("updateV");
 		groupNumX 			= Mathf.CeilToInt((float)_XLength / 64.0f);
 		groupNumE 			= Mathf.CeilToInt((float)_ELength / 64.0f);
     }
@@ -220,14 +225,15 @@ public class implicit_GPU : MonoBehaviour
 		_X.SetData(X);
 		_X_HAT.SetData(X_hat);
 		_GRADIENT.SetData(G);
+
 		_EDGE.SetData(E);
 		_LENGTH.SetData(L);
 		_CS.SetBuffer(ID_forceGradient, "_X", _X);	
 		_CS.SetBuffer(ID_forceGradient, "_X_hat", _X_HAT);	
 		_CS.SetBuffer(ID_forceGradient, "_GRADIENT", _GRADIENT);
 
-		_CS.SetBuffer(ID_forceGradient, "_EDGE", _EDGE);
-		_CS.SetBuffer(ID_forceGradient, "_LENGTH", _LENGTH);	
+		_CS.SetBuffer(ID_springGradient, "_EDGE", _EDGE);
+		_CS.SetBuffer(ID_springGradient, "_LENGTH", _LENGTH);	
 
 		_CS.SetFloat("t", t);
 		_CS.SetFloat("mass", mass);
@@ -241,27 +247,59 @@ public class implicit_GPU : MonoBehaviour
 		_GRADIENT.GetData(G);	//?
 	}
 
-	/* 
-	void Initial()
+ 
+	void Initial(Mesh mesh)
 	{
+		Vector3[] X 		= mesh.vertices;
+		Vector3[] last_X 	= new Vector3[X.Length];
+		Vector3[] X_hat 	= new Vector3[X.Length];
+		Vector3[] G 		= new Vector3[X.Length];
+
+		Vector3 outForce = Vector3.zero;
+		Vector4 totalForce = gravityConst + outForce;
+		Vector4 totalForce4 = new Vector4(totalForce.x,totalForce.y,totalForce.z, 0.0f);
+
+		// 01 Initial Setup.
+		for (int i = 0; i < X.Length; i++)
+		{
+			V[i] *= damping;
+			X_hat[i] = X[i] + t*V[i];
+			// X[i] = X_hat[i] = X[i] + t*V[i];
+			X[i] = X_hat[i];
+		}
+		// Initial();
 		_X.SetData(X);
 		_X_HAT.SetData(X_hat);
 		_GRADIENT.SetData(G);
+		_LAST_X.SetData(last_X);
+		_VELOCITY.SetData(V);
+
 		_EDGE.SetData(E);
 		_LENGTH.SetData(L);
 		_CS.SetBuffer(ID_forceGradient, "_X", _X);	
 		_CS.SetBuffer(ID_forceGradient, "_X_hat", _X_HAT);	
-		_CS.SetBuffer(ID_forceGradient, "_GRADIENT", _GRADIENT);
+		_CS.SetBuffer(ID_forceGradient, "_Gradient", _GRADIENT);
 
-		_CS.SetBuffer(ID_forceGradient, "_EDGE", _EDGE);
-		_CS.SetBuffer(ID_forceGradient, "_LENGTH", _LENGTH);	
+		_CS.SetBuffer(ID_springGradient, "_X", _X);	
+		_CS.SetBuffer(ID_springGradient, "_Last_X", _LAST_X);
+		_CS.SetBuffer(ID_springGradient, "_Velocity", _VELOCITY);
+
+		_CS.SetBuffer(ID_updateX, "_X", _X);	
+		_CS.SetBuffer(ID_updateX, "_EDGE", _EDGE);
+
+		_CS.SetBuffer(ID_updateV, "_X", _X);	
+		_CS.SetBuffer(ID_updateV, "_X_hat", _X_HAT);	
+		_CS.SetBuffer(ID_updateV, "_LENGTH", _LENGTH);	
 
 		_CS.SetFloat("t", t);
 		_CS.SetFloat("mass", mass);
 		_CS.SetFloat("spring_k", spring_k);
-	} */
+		_CS.SetFloat("edgeCount",E.Length);
 
-	void UpdatePrivious () 
+		_CS.SetVector("forcesC", totalForce4);
+	} 
+
+	void UpdatePriviousVersion () 
 	{
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Vector3[] X 		= mesh.vertices;
@@ -316,44 +354,12 @@ public class implicit_GPU : MonoBehaviour
 
 	void Update () 		// GPU version
 	{
-		Mesh mesh = GetComponent<MeshFilter> ().mesh;
-		Vector3[] X 		= mesh.vertices;
-		Vector3[] last_X 	= new Vector3[X.Length];
-		Vector3[] X_hat 	= new Vector3[X.Length];
-		Vector3[] G 		= new Vector3[X.Length];
-
-		Vector3 outForce = Vector3.zero;
-		Vector4 totalForce = gravityConst + outForce;
-		Vector4 totalForce4 = new Vector4(totalForce.x,totalForce.y,totalForce.z, 0.0f);
-
 		// 01 Initial Setup.
-		for (int i = 0; i < X.Length; i++)
-		{
-			V[i] *= damping;
-			X_hat[i] = X[i] + t*V[i];
-			// X[i] = X_hat[i] = X[i] + t*V[i];
-			X[i] = X_hat[i];
-		}
-		// Initial();
-		_X.SetData(X);
-		_X_HAT.SetData(X_hat);
-		_GRADIENT.SetData(G);
-		_EDGE.SetData(E);
-		_LENGTH.SetData(L);
-		_CS.SetBuffer(ID_forceGradient, "_X", _X);	
-		_CS.SetBuffer(ID_forceGradient, "_X_hat", _X_HAT);	
-		_CS.SetBuffer(ID_forceGradient, "_GRADIENT", _GRADIENT);
-		_CS.SetBuffer(ID_forceGradient, "_EDGE", _EDGE);
-		_CS.SetBuffer(ID_forceGradient, "_LENGTH", _LENGTH);	
+		Mesh mesh = GetComponent<MeshFilter> ().mesh;
+		Initial(mesh);
 
-		_CS.SetFloat("t", t);
-		_CS.SetFloat("mass", mass);
-		_CS.SetFloat("spring_k", spring_k);
-		_CS.SetFloat("edgeCount",E.Length);
-
-		_CS.SetVector("forcesC", totalForce4);
 		// =============================================
-		// 02 calculate 
+		// 02 Calculate 
 		float omega = 1.0f;
 		for(int k=0; k<32; k++)
 		{
@@ -363,7 +369,10 @@ public class implicit_GPU : MonoBehaviour
 
 			// GPU_Gradient(X, X_hat, t, G, omega);
 			_CS.SetFloat("omega", omega);
-			_CS.Dispatch(ID_forceGradient, groupNumX, 1, 1);	
+			_CS.Dispatch(ID_forceGradient, groupNumX, 1, 1);
+
+			// pass G to next kernel
+
 			_CS.Dispatch(ID_springGradient, groupNumE, 1, 1);
 
 			//Update X by gradient.
@@ -372,11 +381,10 @@ public class implicit_GPU : MonoBehaviour
 		// =============================================
 		_CS.Dispatch(ID_updateV, groupNumX, 1, 1);
 
-		// 03 pull out data here
-		_GRADIENT.GetData(X);
+		// 03 Pull out data here
+		_VELOCITY.GetData(V);
+		_X.GetData(mesh.vertices);
 
-		//Finishing.
-		mesh.vertices = X;
 		Collision_Handling ();
 		mesh.RecalculateNormals ();
 	}
