@@ -15,8 +15,6 @@ public class implicit_GPU : MonoBehaviour
 	Vector3[] 	V;
 
 	Vector3 gravityConst = new Vector3(0.0f,-9.8f,0.0f);
-	
-	// compute shader setting
     public ComputeShader _CS;			
 
 	ComputeBuffer _X;
@@ -357,7 +355,6 @@ public class implicit_GPU : MonoBehaviour
 		// 01 Initial Setup.
 		Mesh mesh = GetComponent<MeshFilter> ().mesh;
 		Initial(mesh);
-
 		// =============================================
 		// 02 Calculate 
 		float omega = 1.0f;
@@ -371,8 +368,7 @@ public class implicit_GPU : MonoBehaviour
 			_CS.SetFloat("omega", omega);
 			_CS.Dispatch(ID_forceGradient, groupNumX, 1, 1);
 
-			// pass G to next kernel
-
+			// pass G to next kernel ?
 			_CS.Dispatch(ID_springGradient, groupNumE, 1, 1);
 
 			//Update X by gradient.
