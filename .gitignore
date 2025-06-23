@@ -8,10 +8,7 @@
 
 /Library
 
-
 # ----[ Visual Studio / MonoDevelop generated ]------- #
-
- 
 
 ExportedObj/
 
@@ -54,6 +51,8 @@ ProjectSettings
 .Spotlight-V100
 
 .Trashes
+
+.vsconfig
 
 Icon?
 

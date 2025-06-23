@@ -1,6 +1,6 @@
 ## PBA_Lab
 - Games103 assignment.
-- Some extra test with PBA.
+- test some implement with compute shader
 
 # Rigid Dynamics
 
