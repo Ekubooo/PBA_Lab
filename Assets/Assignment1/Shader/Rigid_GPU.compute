@@ -11,7 +11,7 @@ struct GlobalData
 	int cCounter;
 };
 
-int vertCount;
+uint vertCount;
 float4 PanelPos;
 float4 PanelNormal;
 float4 objVelocity;
@@ -26,25 +26,29 @@ RWStructuredBuffer<GlobalData> gData;
 void CollisionDetect(uint3 id : SV_DispatchThreadID)
 {
     if (id.x > vertCount) return;
-    float3 thePoint  = cPoint[id.x];        // vertices[]
+    float3 thePoint1  = cPoint[id.x];             // vertices[]
+    float4 thePoint2  = float4(cPoint[id.x], 1.0f);   // vertices[]
     PointData xi     = pointSet[id.x];
-    // float3 xi        = pointSet[id.x].pPos; // xi transformPoint
+    // float3 xi     = pointSet[id.x].pPos; // xi transformPoint
     GlobalData theGd = gData[id.x];
     float sdf        = dot(xi.pPos - PanelPos.xyz, PanelNormal.xyz);
     if (sdf <= 0.0f)
     {   
-        float3 Rri   = mul(qMatrix, thePoint);   
+        float4 Rri_T   = mul(qMatrix, thePoint2);
+        float3 Rri = Rri_T.xyz;
         float3 vi    = objVelocity.xyz + cross(Rri, objW.xyz);
         if(dot(vi,PanelNormal.xyz) < 0.0f)
         {
             // method 1
             xi.isCollision = 1;
             // method 2
-            theGd.avgPoint += thePoint;
+            GroupMemoryBarrierWithGroupSync();
+            // RW lock not include
+            theGd.avgPoint += thePoint2.xyz;
             theGd.cCounter += 1; 
         }
     }
-    cPoint[id.x]    = thePoint;
+    cPoint[id.x]    = thePoint2.xyz;
     gData[id.x]     = theGd;
     pointSet[id.x]  = xi;
 }
