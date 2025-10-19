@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="" />
+    <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -116,6 +120,9 @@
       <workItem from="1755863621363" duration="1858000" />
       <workItem from="1755873868295" duration="10000" />
       <workItem from="1760087442843" duration="615000" />
+      <workItem from="1760457064843" duration="469000" />
+      <workItem from="1760851020668" duration="4897000" />
+      <workItem from="1760866599814" duration="22000" />
     </task>
     <servers />
   </component>
@@ -144,6 +151,19 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/Assets/Assignment2/Script/implicit_GPU.cs</url>
+          <line>300</line>
+          <properties documentPath="D:\Unity\UnityMyProject\PBA_Lab\Assets\Assignment2\Script\implicit_GPU.cs" containingFunctionPresentation="方法 'UpdatePriviousVersion'">
+            <startOffsets>
+              <option value="7947" />
+            </startOffsets>
+            <endOffsets>
+              <option value="7948" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
