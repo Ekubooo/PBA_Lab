@@ -9,53 +9,88 @@ public class PreFluid : MonoBehaviour
     // [SerializeField] Transform pointPrefab;
     // Transform point;
     [SerializeField] GameObject go;
-    GameObject myCircle;
-    SpriteRenderer r;
+    GameObject[] myCircle;
+    SpriteRenderer[] r;
     
     public float collisionDamping;
     public float particleSize;
     public float gravity;
+    public int numParticles;
+    public float particleSpacing;
     public Vector2 boundSize;
+    // public Vector2 obstacleSize;
+    // public Vector2 obstacleCentre;
     
-    Vector2 position = Vector2.zero;
-    Vector2 velocity = Vector2.zero;
+    Vector2[] position;
+    Vector2[] velocity;
+    Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
     void Start()
     {
         // point = Instantiate(pointPrefab);
         // point.localPosition = 2f * Vector2.right;
-        myCircle = Instantiate(go);
-        r = myCircle.GetComponent<SpriteRenderer>();
+        
+        // init
+        position = new Vector2[numParticles];
+        velocity = new Vector2[numParticles];
+        myCircle = new GameObject[numParticles];
+        r = new SpriteRenderer[numParticles];
+        
+        int partPerRow = (int)math.sqrt(numParticles);
+        int partPerCol = (numParticles - 1) / partPerRow + 1;
+        float spacing = particleSize * 2 + particleSpacing;
+
+        for (int i = 0; i < numParticles; i++)
+        {
+            myCircle[i] = Instantiate(go);
+            r[i] = myCircle[i].GetComponent<SpriteRenderer>();
+            
+            float x = (i % partPerRow - partPerRow / 2f + 0.5f) * spacing;
+            float y = (i / partPerRow - partPerCol / 2f + 0.5f) * spacing;
+            position[i] = new Vector2(x, y);
+        }
     }
     
     void Update()
     {
-        velocity += Vector2.down * gravity * Time.deltaTime;
-        position += velocity * Time.deltaTime;
-        ResolveCollisions();
-        DrawCircle(position, particleSize, new Color(135f/255f,206f/255f,235f/255f));
+        for (int i = 0; i < position.Length; i++)
+        {
+            velocity[i] += Vector2.down * gravity * Time.deltaTime;
+            position[i] += velocity[i] * Time.deltaTime;
+            ResolveCollisions(i);
+            DrawCircle(position[i], particleSize, skyBlue, i);   
+        }
     }
 
-    void DrawCircle(Vector2 pos, float radius, Color color)
+    void DrawCircle(Vector2 pos, float radius, Color color, int i)
     {
-        myCircle.transform.position = pos;
-        myCircle.transform.localScale = new Vector2(radius, radius);
-        r.color = color;
+        float d = radius * 2f;
+        myCircle[i].transform.position = pos;
+        myCircle[i].transform.localScale = new Vector2(d, d);
+        r[i].color = color;
     }
 
-    void ResolveCollisions()
+    void ResolveCollisions(int i)
     {
         Vector2 halfBoundSize = boundSize / 2 - Vector2.one * particleSize;
-        if (math.abs(position.x) > halfBoundSize.x)
+        Vector2 curPos = position[i];
+        Vector2 curVel = velocity[i];
+        if (math.abs(curPos.x) > halfBoundSize.x)
         {
-            position.x = halfBoundSize.x * math.sign(position.x);
-            velocity.x *= -1 * collisionDamping;
+            // position[i].x = halfBoundSize.x * math.sign(curPos.x);
+            // velocity[i].x *= -1 * collisionDamping;
+            curPos.x = halfBoundSize.x * math.sign(curPos.x);
+            curVel.x *= -1 * collisionDamping;
         }
 
-        if (math.abs(position.y) > halfBoundSize.y)
+        if (math.abs(curPos.y) > halfBoundSize.y)
         {
-            position.y = halfBoundSize.y * math.sign(position.y);
-            velocity.y *= -1 * collisionDamping;
+            // position[i].y = halfBoundSize.y * math.sign(curPos.y);
+            // velocity[i].y *= -1 * collisionDamping;
+            curPos.y = halfBoundSize.y * math.sign(curPos.y);
+            curVel.y *= -1 * collisionDamping;
         }
+        position[i] = curPos;
+        velocity[i] = curVel;
     }
 
     void OnDrawGizmos()
