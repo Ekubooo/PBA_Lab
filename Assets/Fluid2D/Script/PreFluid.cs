@@ -4,22 +4,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
 
+using static UnityEngine.Mathf;
+
 public class PreFluid : MonoBehaviour
 {
     // [SerializeField] Transform pointPrefab;
     // Transform point;
     [SerializeField] GameObject go;
-    GameObject[] myCircle;
-    SpriteRenderer[] r;
+    [SerializeField] Transform preGo;
     
+    // GameObject[] myCircle;
+    Transform[] myPartical;
+    SpriteRenderer[] r;
+
+    public float smoothRadius = 2;
     public float collisionDamping;
     public float particleSize;
     public float gravity;
     public int numParticles;
     public float particleSpacing;
     public Vector2 boundSize;
-    // public Vector2 obstacleSize;
-    // public Vector2 obstacleCentre;
     
     Vector2[] position;
     Vector2[] velocity;
@@ -32,7 +36,8 @@ public class PreFluid : MonoBehaviour
         // init
         position = new Vector2[numParticles];
         velocity = new Vector2[numParticles];
-        myCircle = new GameObject[numParticles];
+        // myCircle = new GameObject[numParticles];
+        myPartical = new Transform[numParticles];
         r = new SpriteRenderer[numParticles];
         
         int partPerRow = (int)math.sqrt(numParticles);
@@ -41,8 +46,9 @@ public class PreFluid : MonoBehaviour
 
         for (int i = 0; i < numParticles; i++)
         {
-            myCircle[i] = Instantiate(go);
-            r[i] = myCircle[i].GetComponent<SpriteRenderer>();
+            // myCircle[i] = Instantiate(go);
+            myPartical[i] = Instantiate(preGo, this.transform);
+            r[i] = myPartical[i].GetComponent<SpriteRenderer>();
             
             float x = (i % partPerRow - partPerRow / 2f + 0.5f) * spacing;
             float y = (i / partPerRow - partPerCol / 2f + 0.5f) * spacing;
@@ -64,8 +70,10 @@ public class PreFluid : MonoBehaviour
     void DrawCircle(Vector2 pos, float radius, Color color, int i)
     {
         float d = radius * 2f;
-        myCircle[i].transform.position = pos;
-        myCircle[i].transform.localScale = new Vector2(d, d);
+        // myCircle[i].transform.position = pos;
+        // myCircle[i].transform.localScale = new Vector2(d, d);
+        myPartical[i].transform.position = pos;
+        myPartical[i].transform.localScale = new Vector2(d, d);
         r[i].color = color;
     }
 
@@ -78,7 +86,7 @@ public class PreFluid : MonoBehaviour
         {
             // position[i].x = halfBoundSize.x * math.sign(curPos.x);
             // velocity[i].x *= -1 * collisionDamping;
-            curPos.x = halfBoundSize.x * math.sign(curPos.x);
+            curPos.x = halfBoundSize.x * Sign(curPos.x);
             curVel.x *= -1 * collisionDamping;
         }
 
@@ -86,11 +94,30 @@ public class PreFluid : MonoBehaviour
         {
             // position[i].y = halfBoundSize.y * math.sign(curPos.y);
             // velocity[i].y *= -1 * collisionDamping;
-            curPos.y = halfBoundSize.y * math.sign(curPos.y);
+            curPos.y = halfBoundSize.y * Sign(curPos.y);
             curVel.y *= -1 * collisionDamping;
         }
         position[i] = curPos;
         velocity[i] = curVel;
+    }
+
+    float SmoothingKernel(float radius, float dst)
+    {
+        float bas = Max(0, radius * radius - dst * dst);    
+        return bas * bas * bas;
+    }
+
+    float Density(Vector2 samplePoint)
+    {
+        float density = 0;
+        const float mass = 1;
+        foreach (Vector2 pos in position)
+        {
+            float dst = (pos - samplePoint).magnitude;
+            float influence = SmoothingKernel(smoothRadius, dst);
+            density += mass * influence;
+        }
+        return density;
     }
 
     void OnDrawGizmos()
