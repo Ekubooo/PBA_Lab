@@ -166,12 +166,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c02b2fa0c25a48e4693e65ff9acbaab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  go: {fileID: 7808974802707690380, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
-  collisionDamping: 0.98
+  pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
+  smoothRadius: 2
+  collisionDamping: 0.9
   particleSize: 0.25
-  gravity: 10
-  numParticles: 10
-  particleSpacing: 2
+  gravity: 0
+  numParticles: 121
+  particleSpacing: 0.125
   boundSize: {x: 16, y: 9}
 --- !u!1 &793713034
 GameObject:

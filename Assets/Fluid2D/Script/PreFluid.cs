@@ -8,15 +8,14 @@ using static UnityEngine.Mathf;
 
 public class PreFluid : MonoBehaviour
 {
-    // [SerializeField] Transform pointPrefab;
-    // Transform point;
-    [SerializeField] GameObject go;
-    [SerializeField] Transform preGo;
-    
+    // [SerializeField] GameObject go;
     // GameObject[] myCircle;
+    
+    [SerializeField] Transform pointPrefab;
     Transform[] myPartical;
     SpriteRenderer[] r;
-
+    
+    public float mass = 1;
     public float smoothRadius = 2;
     public float collisionDamping;
     public float particleSize;
@@ -27,6 +26,8 @@ public class PreFluid : MonoBehaviour
     
     Vector2[] position;
     Vector2[] velocity;
+    private Vector2[] particleProperty;
+    
     Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
     void Start()
     {
@@ -36,6 +37,8 @@ public class PreFluid : MonoBehaviour
         // init
         position = new Vector2[numParticles];
         velocity = new Vector2[numParticles];
+        particleProperty = new Vector2[numParticles];
+        
         // myCircle = new GameObject[numParticles];
         myPartical = new Transform[numParticles];
         r = new SpriteRenderer[numParticles];
@@ -46,13 +49,13 @@ public class PreFluid : MonoBehaviour
 
         for (int i = 0; i < numParticles; i++)
         {
-            // myCircle[i] = Instantiate(go);
-            myPartical[i] = Instantiate(preGo, this.transform);
+            myPartical[i] = Instantiate(pointPrefab, this.transform);
             r[i] = myPartical[i].GetComponent<SpriteRenderer>();
             
             float x = (i % partPerRow - partPerRow / 2f + 0.5f) * spacing;
             float y = (i / partPerRow - partPerCol / 2f + 0.5f) * spacing;
             position[i] = new Vector2(x, y);
+            particleProperty[i] = Vector2.zero;
         }
     }
     
@@ -67,6 +70,12 @@ public class PreFluid : MonoBehaviour
         }
     }
 
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireCube(Vector2.zero, boundSize);
+    }
+    
     void DrawCircle(Vector2 pos, float radius, Color color, int i)
     {
         float d = radius * 2f;
@@ -101,16 +110,25 @@ public class PreFluid : MonoBehaviour
         velocity[i] = curVel;
     }
 
-    float SmoothingKernel(float radius, float dst)
+    static float SmoothingKernel(float radius, float dst)
     {
+        float ConstVolume = PI * Pow(radius, 8) / 4;
         float bas = Max(0, radius * radius - dst * dst);    
-        return bas * bas * bas;
+        return bas * bas * bas / ConstVolume;
+    }
+    
+    static float SmoothingKernelDericatve(float radius, float dst)
+    {
+        if (dst >= radius) return 0;
+        float f = radius * radius -  dst * dst;
+        float scale = -24 / (PI * Pow(radius, 8));
+        return scale * dst * f * f;
     }
 
     float Density(Vector2 samplePoint)
     {
         float density = 0;
-        const float mass = 1;
+        // const float mass = 1;
         foreach (Vector2 pos in position)
         {
             float dst = (pos - samplePoint).magnitude;
@@ -120,9 +138,44 @@ public class PreFluid : MonoBehaviour
         return density;
     }
 
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(Vector2.zero, boundSize);
+    float calculateProperty(Vector2 samplePoint)
+    {   // SPH core
+        // it can be density()
+        float property = 0;
+        for (int i = 0; i < numParticles; i++)
+        {
+            float dst =(position[i] - samplePoint).magnitude;
+            float influence = SmoothingKernel(dst, smoothRadius);
+            float density = Density(position[i]);
+            // property += particleProperty[i] * influence * mass / density;
+        }
+        return property;
     }
+
+    Vector2 PGradient(Vector2 samplePoint)
+    {
+        const float stepSize = 0.001f;
+        float deltaX = - calculateProperty(samplePoint)
+            + calculateProperty(samplePoint + Vector2.right * stepSize);
+        float deltaY = -calculateProperty(samplePoint)
+            + calculateProperty(samplePoint + Vector2.up * stepSize);
+        
+        Vector2 gradient = new Vector2(deltaX, deltaY) /  stepSize;
+        return gradient;
+    }
+
+    Vector2 CPGradient(Vector2 samplePoint)
+    {
+        Vector2 popGradient = Vector2.zero;
+        for (int i = 0; i < numParticles; i++)
+        {
+            float dst = (position[i] - samplePoint).magnitude;
+            Vector2 dir = (position[i] - samplePoint) / dst;
+            float slop = SmoothingKernelDericatve(dst, smoothRadius);
+            float density = Density(position[i]);
+            popGradient += - particleProperty[i] * dir * slop * mass / density; 
+        }
+        return popGradient;
+    }
+    
 }
