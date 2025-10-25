@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Mathematics;
-
+using UnityEngine.UI;
 using static UnityEngine.Mathf;
 
 public class PreFluid : MonoBehaviour
@@ -74,6 +74,26 @@ public class PreFluid : MonoBehaviour
         }
     }
 
+    void SimStep(float deltaTime)
+    {
+        Parallel.For(0, numParticles, i =>
+        {
+            velocity[i] = Vector2.down * gravity * deltaTime;
+            densities[i] = Density(position[i]);
+        });
+        Parallel.For(0, numParticles, i =>
+        {
+            Vector2 pressureForce = CPressureForce(i);
+            Vector2 pressureAcc = pressureForce / densities[i];
+            velocity[i] = pressureAcc * deltaTime;
+        });
+        Parallel.For(0, numParticles, i =>
+        {
+            position[i] += velocity[i] * deltaTime;
+            ResolveCollisions(ref position[i], ref velocity[i]);    // override
+        });
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -112,21 +132,42 @@ public class PreFluid : MonoBehaviour
         }
         position[i] = curPos;
         velocity[i] = curVel;
+    } 
+    void ResolveCollisions(ref Vector2 position, ref Vector2 velocity)
+    {
+        Vector2 halfBoundSize = boundSize / 2 - Vector2.one * particleSize;
+
+        if (math.abs(position.x) > halfBoundSize.x)
+        {
+            // position[i].x = halfBoundSize.x * math.sign(curPos.x);
+            // velocity[i].x *= -1 * collisionDamping;
+            position.x = halfBoundSize.x * Sign(position.x);
+            velocity.x *= -1 * collisionDamping;
+        }
+
+        if (math.abs(position.y) > halfBoundSize.y)
+        {
+            // position[i].y = halfBoundSize.y * math.sign(curPos.y);
+            // velocity[i].y *= -1 * collisionDamping;
+            position.y = halfBoundSize.y * Sign(position.y);
+            velocity.y *= -1 * collisionDamping;
+        }
     }
 
     static float SmoothingKernel(float radius, float dst)
     {
-        float ConstVolume = PI * Pow(radius, 8) / 4;
-        float bas = Max(0, radius * radius - dst * dst);    
-        return bas * bas * bas / ConstVolume;
+        if (dst >= radius) return 0;
+        
+        float ConstVolume = PI * Pow(radius, 4) / 6;
+        return (radius - dst) * (radius - dst) / ConstVolume;
     }
     
     static float SmoothingKernelDericatve(float radius, float dst)
     {
         if (dst >= radius) return 0;
-        float f = radius * radius -  dst * dst;
-        float scale = -24 / (PI * Pow(radius, 8));
-        return scale * dst * f * f;
+        
+        float scale = 12 / (Pow(radius, 4) * PI);
+        return (dst - radius) * scale;
     }
 
     float Density(Vector2 samplePoint)
@@ -187,5 +228,29 @@ public class PreFluid : MonoBehaviour
         }
         return popGradient;
     }
+    
+    Vector2 CPressureForce(int PIndex)
+    {
+        Vector2 PressureForce = Vector2.zero;
+        for (int OIndex = 0; OIndex < numParticles; OIndex++)
+        {
+            if (PIndex == OIndex) continue;
+            Vector2 offset = position[OIndex] -  position[PIndex];
+            
+            float dst = offset.magnitude;
+            Vector2 dir = offset / dst; // ???
+            float slop = SmoothingKernelDericatve(dst, smoothRadius);
+            float density = densities[OIndex];
+            PressureForce += - Density2Pressure(density) * dir * slop * mass / density; 
+        }
+        return PressureForce;
+    }
+
+    float Density2Pressure(float density)
+    {
+        float densityError = density - targetDensity;
+        float pressure = densityError * pressureMultiplier;
+        return pressure;
+    } 
     
 }
