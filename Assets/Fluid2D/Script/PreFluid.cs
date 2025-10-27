@@ -54,6 +54,7 @@ namespace PBA.Fluid2D.Helper
             // init
             position = new Vector2[numParticles];
             velocity = new Vector2[numParticles];
+            densities = new float[numParticles];
             particleProperty = new Vector2[numParticles];
             
             // myCircle = new GameObject[numParticles];
@@ -73,18 +74,20 @@ namespace PBA.Fluid2D.Helper
                 float y = (i / partPerRow - partPerCol / 2f + 0.5f) * spacing;
                 position[i] = new Vector2(x, y);
                 particleProperty[i] = Vector2.zero;
+                densities[i] = 0;
             }
         }
         
         void Update()
         {
-            for (int i = 0; i < position.Length; i++)
-            {
-                velocity[i] += Vector2.down * gravity * Time.deltaTime;
-                position[i] += velocity[i] * Time.deltaTime;
-                ResolveCollisions(i);
-                DrawCircle(position[i], particleSize, skyBlue, i);   
-            }
+            // for (int i = 0; i < position.Length; i++)
+            // {
+            //     velocity[i] += Vector2.down * gravity * Time.deltaTime;
+            //     position[i] += velocity[i] * Time.deltaTime;
+            //     ResolveCollisions(i);
+            //     DrawCircle(position[i], particleSize, skyBlue, i);   
+            // }
+            SimStep(Time.deltaTime);
         }
 
         void OnDrawGizmos()
@@ -92,19 +95,20 @@ namespace PBA.Fluid2D.Helper
             Gizmos.color = Color.green;
             Gizmos.DrawWireCube(Vector2.zero, boundSize);
         }
+        
         void SimStep(float deltaTime)
         {
             Parallel.For(0, numParticles, i =>
             {
                 velocity[i] = Vector2.down * gravity * deltaTime;
-                densities[i] = Density(position[i]);
+                densities[i] = CDensity(position[i]);
             });
 
             // fixedRadiusNeighbourSearch.updateSLookup(predPos, smoothRadius);
-            Parallel.For(0, numParticles, i =>
-            {
-                // densities[i] = Density(predictedPosition[i]);
-            });
+            // Parallel.For(0, numParticles, i =>
+            // {
+            //      densities[i] = Density(predictedPosition[i]);
+            // });
             
             Parallel.For(0, numParticles, i =>
             {
@@ -116,6 +120,7 @@ namespace PBA.Fluid2D.Helper
             {
                 position[i] += velocity[i] * deltaTime;
                 ResolveCollisions(ref position[i], ref velocity[i]);    // override
+                DrawCircle(position[i], particleSize, skyBlue, i);   
             });
         }
         
@@ -190,7 +195,7 @@ namespace PBA.Fluid2D.Helper
             return (dst - radius) * scale;
         }
 
-        float Density(Vector2 samplePoint)
+        float CDensity(Vector2 samplePoint)
         {
             float density = 0;
             // const float mass = 1;
@@ -202,16 +207,22 @@ namespace PBA.Fluid2D.Helper
             }
             return density;
         }
+        
+        void UpdateDensities()
+        {
+            Parallel.For(0, numParticles, 
+                i => {densities[i] = CDensity(position[i]);});
+        }
 
         float calculateProperty(Vector2 samplePoint)
         {   // SPH core
-            // it can be density()
+            // it can be CDensity() when property is density.
             float property = 0;
             for (int i = 0; i < numParticles; i++)
             {
                 float dst =(position[i] - samplePoint).magnitude;
                 float influence = SmoothingKernel(dst, smoothRadius);
-                float density = Density(position[i]);
+                float density = CDensity(position[i]);
                 // property += particleProperty[i] * influence * mass / density;
             }
             return property;
@@ -227,12 +238,6 @@ namespace PBA.Fluid2D.Helper
             
             Vector2 gradient = new Vector2(deltaX, deltaY) /  stepSize;
             return gradient;
-        }
-
-        void UpdateDensities()
-        {
-            Parallel.For(0, numParticles, 
-                i => {densities[i] = Density(position[i]);});
         }
         
         Vector2 CPGradient(Vector2 samplePoint)
@@ -258,7 +263,8 @@ namespace PBA.Fluid2D.Helper
                 Vector2 offset = position[OIndex] -  position[PIndex];
                 
                 float dst = offset.magnitude;
-                Vector2 dir = offset / dst; // ???
+                // Vector2 dir = dst == 0 ? GetRandomDir() : offset / dst;
+                Vector2 dir = dst == 0 ? velocity[PIndex].normalized : offset / dst;
                 float slop = SmoothingKernelDericatve(dst, smoothRadius);
                 float density = densities[OIndex];
                 float sharePressure = CSharePressure(density, densities[PIndex]);

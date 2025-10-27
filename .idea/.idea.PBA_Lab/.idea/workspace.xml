@@ -5,11 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Helper.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Helper/Helper.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Helper/Helper.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs" afterDir="false" />
     </list>
@@ -39,6 +34,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Interaction2D.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Helper/Helper.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 1
@@ -138,10 +134,12 @@
       <workItem from="1761295984134" duration="4289000" />
       <workItem from="1761300333602" duration="1632000" />
       <workItem from="1761374440013" duration="10594000" />
-      <workItem from="1761390752550" duration="2950000" />
+      <workItem from="1761390752550" duration="4198000" />
+      <workItem from="1761548337394" duration="7342000" />
     </task>
     <servers />
   </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="true" />
   <component name="UnityProjectDiscoverer">
     <option name="hasUnityReference" value="true" />
