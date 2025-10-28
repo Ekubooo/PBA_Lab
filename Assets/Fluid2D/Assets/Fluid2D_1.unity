@@ -162,22 +162,23 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417139561}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c02b2fa0c25a48e4693e65ff9acbaab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
   mass: 1
-  smoothRadius: 2
-  collisionDamping: 0.9
-  particleSize: 0.25
-  gravity: 0
-  numParticles: 121
-  particleSpacing: 0.125
+  smoothRadius: 3
+  radius: 2
+  collisionDamping: 0.95
+  particleSize: 0.125
+  gravity: 10
+  numParticles: 225
+  particleSpacing: 0.1
   boundSize: {x: 16, y: 9}
-  targetDensity: 0
-  pressureMultiplier: 0
+  targetDensity: 2
+  pressureMultiplier: 200
 --- !u!114 &417139564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -185,7 +186,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417139561}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cda233a52a120534788d0178854dd05e, type: 3}
   m_Name: 

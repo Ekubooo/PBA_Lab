@@ -64,11 +64,16 @@ namespace PBA.Fluid2D.Helper
             int partPerRow = (int)math.sqrt(numParticles);
             int partPerCol = (numParticles - 1) / partPerRow + 1;
             float spacing = particleSize * 2 + particleSpacing;
+            float d = particleSize * 2f;
 
             for (int i = 0; i < numParticles; i++)
             {
+                
                 myPartical[i] = Instantiate(pointPrefab, this.transform);
+                myPartical[i].transform.localScale = new Vector2(d, d);
+                
                 r[i] = myPartical[i].GetComponent<SpriteRenderer>();
+                r[i].color = skyBlue; 
                 
                 float x = (i % partPerRow - partPerRow / 2f + 0.5f) * spacing;
                 float y = (i / partPerRow - partPerCol / 2f + 0.5f) * spacing;
@@ -88,6 +93,7 @@ namespace PBA.Fluid2D.Helper
             //     DrawCircle(position[i], particleSize, skyBlue, i);   
             // }
             SimStep(Time.deltaTime);
+            DrawPatricles(); 
         }
 
         void OnDrawGizmos()
@@ -114,13 +120,14 @@ namespace PBA.Fluid2D.Helper
             {
                 Vector2 pressureForce = CPressureForce(i);
                 Vector2 pressureAcc = pressureForce / densities[i];
-                velocity[i] = pressureAcc * deltaTime;
+                velocity[i] += pressureAcc * deltaTime;     // = or +=
             });
             Parallel.For(0, numParticles, i =>
             {
                 position[i] += velocity[i] * deltaTime;
                 ResolveCollisions(ref position[i], ref velocity[i]);    // override
-                DrawCircle(position[i], particleSize, skyBlue, i);   
+                // myPartical[i].transform.position = position[i];
+                // do a version of using Transfrom instead of GO
             });
         }
         
@@ -132,6 +139,16 @@ namespace PBA.Fluid2D.Helper
             myPartical[i].transform.position = pos;
             myPartical[i].transform.localScale = new Vector2(d, d);
             r[i].color = color;
+        }
+        
+        void DrawPatricles()
+        {
+            for (int i = 0; i < numParticles; i++)
+            {
+                myPartical[i].position = position[i];
+                // myPartical[i].transform.localScale = new Vector2(d, d);
+                // r[i].color = skyBlue; 
+            }
         }
 
         void ResolveCollisions(int i)
@@ -353,5 +370,4 @@ namespace PBA.Fluid2D.Helper
         }
         
     }
-
 }
