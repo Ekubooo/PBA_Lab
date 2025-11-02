@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/GPU_Test.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/GPU_Test.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_1.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_1.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -34,7 +34,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/Assignment1/Script/Rigid_GPU.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Interaction2D.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_3.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Helper/Helper.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
@@ -142,7 +142,9 @@
       <workItem from="1761645625234" duration="8000" />
       <workItem from="1761645635883" duration="5000" />
       <workItem from="1761645659663" duration="78000" />
-      <workItem from="1761652154742" duration="3747000" />
+      <workItem from="1761652154742" duration="3940000" />
+      <workItem from="1761661112996" duration="419000" />
+      <workItem from="1762063576208" duration="4057000" />
     </task>
     <servers />
   </component>

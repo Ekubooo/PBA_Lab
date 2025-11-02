@@ -92,7 +92,7 @@ namespace PBA.Fluid2D.Helper
             //     ResolveCollisions(i);
             //     DrawCircle(position[i], particleSize, skyBlue, i);   
             // }
-            SimStep(Time.deltaTime);
+            SimStep(10f * Time.deltaTime);
             DrawPatricles(); 
         }
 
@@ -125,7 +125,8 @@ namespace PBA.Fluid2D.Helper
             Parallel.For(0, numParticles, i =>
             {
                 position[i] += velocity[i] * deltaTime;
-                ResolveCollisions(ref position[i], ref velocity[i]);    // override
+                // ResolveCollisions(ref position[i], ref velocity[i]);    // override
+                ResolveCollisions(i);
                 // myPartical[i].transform.position = position[i];
                 // do a version of using Transfrom instead of GO
             });
@@ -144,11 +145,7 @@ namespace PBA.Fluid2D.Helper
         void DrawPatricles()
         {
             for (int i = 0; i < numParticles; i++)
-            {
                 myPartical[i].position = position[i];
-                // myPartical[i].transform.localScale = new Vector2(d, d);
-                // r[i].color = skyBlue; 
-            }
         }
 
         void ResolveCollisions(int i)
@@ -178,7 +175,7 @@ namespace PBA.Fluid2D.Helper
         void ResolveCollisions(ref Vector2 position, ref Vector2 velocity)
         {
             Vector2 halfBoundSize = boundSize / 2 - Vector2.one * particleSize;
-
+            
             if (math.abs(position.x) > halfBoundSize.x)
             {
                 // position[i].x = halfBoundSize.x * math.sign(curPos.x);

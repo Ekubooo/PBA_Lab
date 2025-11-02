@@ -6,7 +6,7 @@ using Unity.Mathematics;
 
 using static UnityEngine.Mathf;
 
-public class Fluid2d_1 : MonoBehaviour
+public class Fluid2D_1 : MonoBehaviour
 {
     [SerializeField] Transform pointPrefab;
     
