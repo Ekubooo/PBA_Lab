@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using UnityEngine.UI;
 
 using static UnityEngine.Mathf;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 public class Fluid2D_3 : MonoBehaviour
 {
@@ -15,22 +15,23 @@ public class Fluid2D_3 : MonoBehaviour
     Transform[] myPartical;
     SpriteRenderer[] r;
     
-    public float mass = 1;
-    public float smoothRadius = 2;
-    public float collisionDamping;
-    public float particleSize;
-    public float gravity;
-    public int numParticles;
-    public float particleSpacing;
-    public Vector2 boundSize;
+    [SerializeField] float mass = 1;
+    [SerializeField] float smoothRadius = 2;
+    [SerializeField] float collisionDamping;
+    [SerializeField] float particleSize;
+    [SerializeField] float gravity;
+    [SerializeField] int numParticles;
+    [SerializeField] float particleSpacing;
+    [SerializeField] Vector2 boundSize;
 
-    public float targetDensity;
-    public float pressureMultiplier;
+    [SerializeField] float targetDensity;
+    [SerializeField] float pressureMultiplier;
+    
     
     Vector2[] position;
     Vector2[] velocity;
-    float[] densities;
     Vector2[] particleProperty;
+    float[] densities;
     
     Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
     void Start()
@@ -80,7 +81,7 @@ public class Fluid2D_3 : MonoBehaviour
     {
         Parallel.For(0, numParticles, i =>
         {
-            velocity[i] = Vector2.down * gravity * deltaTime;
+            velocity[i] += Vector2.down * gravity * deltaTime;
             densities[i] = CDensity(position[i]);
         });
         Parallel.For(0, numParticles, i =>
@@ -106,13 +107,13 @@ public class Fluid2D_3 : MonoBehaviour
     {
         Vector2 halfBoundSize = boundSize / 2 - Vector2.one * particleSize;
 
-        if (math.abs(position.x) > halfBoundSize.x)
+        if (Abs(position.x) > halfBoundSize.x)
         {
             position.x = halfBoundSize.x * Sign(position.x);
             velocity.x *= -1 * collisionDamping;
         }
 
-        if (math.abs(position.y) > halfBoundSize.y)
+        if (Abs(position.y) > halfBoundSize.y)
         {
             position.y = halfBoundSize.y * Sign(position.y);
             velocity.y *= -1 * collisionDamping;
@@ -123,19 +124,15 @@ public class Fluid2D_3 : MonoBehaviour
     {
         if (dst >= radius) return 0;
         
-        float ConstVolume = PI * Pow(radius, 8) / 4;
-        float v = Max(0, radius * radius - dst * dst);
-        return v * v * v / ConstVolume;
-        // return (radius - dst) * (radius - dst) / ConstVolume;
+        float ConstVolume = (PI * Pow(radius, 4)) / 6;
+        return (radius - dst) * (radius - dst) / ConstVolume;
     }
     
     static float SmoothingKernelDericatve(float radius, float dst)
     {
         if (dst >= radius) return 0;
-        float f = radius * radius - dst * dst;
-        float scale = -24 / (PI * Pow(radius, 8));
-        return scale * dst * f * f;
-        // return (dst - radius) * scale;
+        float scale = 12 / (PI * Pow(radius, 4));
+        return (dst - radius) * scale;
     }
 
     float CDensity(Vector2 samplePoint)
@@ -160,7 +157,6 @@ public class Fluid2D_3 : MonoBehaviour
             float dst = (position[i] - samplePoint).magnitude;
             float influence = SmoothingKernel(dst, smoothRadius);
             float density = CDensity(position[i]);
-            // property += particleProperty[i] * influence * mass / density;
         }
         return property;
     }
@@ -174,31 +170,32 @@ public class Fluid2D_3 : MonoBehaviour
             Vector2 offset = position[OIndex] -  position[PIndex];
             
             float dst = offset.magnitude;
-            // Vector2 dir = dst == 0 ? GetRandomDir() : offset / dst;
-            Vector2 refDir = velocity[OIndex] - velocity[PIndex];
-            Vector2 dir = dst == 0 ? refDir : offset / dst;
-            float slop = SmoothingKernelDericatve(dst, smoothRadius);
+            Vector2 dir = dst == 0 ? GetRandomDir() : offset / dst;
+            // Vector2 refDir = velocity[PIndex] - velocity[OIndex];
+            // Vector2 dir = dst == 0 ? refDir : offset / dst;
+            float slope = SmoothingKernelDericatve(dst, smoothRadius);
             float density = densities[OIndex];
-            // float sharePressure = CSharePressure(density, densities[PIndex]);
-            PressureForce 
-                += -Density2Pressure(density) * dir * slop * mass / density; 
+            float sharePressure = CSharePressure(density, densities[PIndex]);
+            // PressureForce += Density2Pressure(density) * dir * slop * mass / density; 
+            PressureForce += sharePressure * dir * slope * mass / density; 
         }
         return PressureForce;
     }
 
     Vector2 GetRandomDir()
     {
-        float angleInRadians = UnityEngine.Random.Range(0f, 2f * Mathf.PI);
+        float angleInRadians = Random.Range(0f, 2f * Mathf.PI);
 
-        float x = Mathf.Cos(angleInRadians);
-        float y = Mathf.Sin(angleInRadians);
-
+        float x = Cos(angleInRadians);
+        float y = Sin(angleInRadians);
         return new Vector2(x, y);
     }
     
     float Density2Pressure(float density)
     {
         float densityError = density - targetDensity;
+        // verify and not good. not the error one. 
+        // float densityError = targetDensity - density;
         float pressure = densityError * pressureMultiplier;
         return pressure;
     } 
