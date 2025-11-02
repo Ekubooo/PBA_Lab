@@ -7,7 +7,7 @@ using Unity.Mathematics;
 using UnityEngine.UI;
 
 using static UnityEngine.Mathf;
-using Random = UnityEngine.Random;
+using Random = System.Random;
 
 public class Fluid2D_3 : MonoBehaviour
 {
@@ -170,7 +170,7 @@ public class Fluid2D_3 : MonoBehaviour
             Vector2 offset = position[OIndex] -  position[PIndex];
             
             float dst = offset.magnitude;
-            Vector2 dir = dst == 0 ? GetRandomDir() : offset / dst;
+            Vector2 dir = dst == 0 ? GetRandomDir(PIndex) : offset / dst;
             // Vector2 refDir = velocity[PIndex] - velocity[OIndex];
             // Vector2 dir = dst == 0 ? refDir : offset / dst;
             float slope = SmoothingKernelDericatve(dst, smoothRadius);
@@ -181,13 +181,13 @@ public class Fluid2D_3 : MonoBehaviour
         }
         return PressureForce;
     }
-
-    Vector2 GetRandomDir()
+    
+    Vector2 GetRandomDir(int seed)
     {
-        float angleInRadians = Random.Range(0f, 2f * Mathf.PI);
-
-        float x = Cos(angleInRadians);
-        float y = Sin(angleInRadians);
+        System.Random rng = new(seed);
+        float angle = (float)rng.NextDouble() * 2.0f * PI;
+        float x = Cos(angle);
+        float y = Sin(angle);
         return new Vector2(x, y);
     }
     

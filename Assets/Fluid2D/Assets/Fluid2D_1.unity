@@ -241,12 +241,12 @@ MonoBehaviour:
   smoothRadius: 1.25
   collisionDamping: 0.9
   particleSize: 0.125
-  gravity: 10
-  numParticles: 100
+  gravity: 0
+  numParticles: 144
   particleSpacing: 0.125
   boundSize: {x: 16, y: 9}
   targetDensity: 2
-  pressureMultiplier: 5
+  pressureMultiplier: 10
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0
