@@ -1,5 +1,5 @@
 ## Record
-- overall process 
+- overall 2D process 
     - Pressure Apply
     ```
     start();        // initialize var
@@ -16,6 +16,5 @@
     END update();
     ```
 ## TODO
-- Damping apply not correct, maybe applying on velosity and update early than simstep, ref to 103
-- Position update and draw not align.
-- Random dir not implement.
+- Damping: for Edge of box
+- Viscosity
