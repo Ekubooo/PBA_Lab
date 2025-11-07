@@ -1,6 +1,7 @@
 ## PBA_Lab
-- Games103 assignment.
-- test some implement with compute shader
+- 103 assignment.
+- Test with compute shader
+- Fluid with Lagrangian Approach
 
 # Rigid Dynamics
 

@@ -239,15 +239,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
   mass: 1
-  smoothRadius: 1.25
-  collisionDamping: 0.9
+  smoothRadius: 1
+  collisionDamping: 1
   particleSize: 0.125
   gravity: 0
-  numParticles: 144
-  particleSpacing: 0.25
-  boundSize: {x: 16, y: 9}
+  numParticles: 1024
+  particleSpacing: 0.125
+  boundSize: {x: 12, y: 9}
   targetDensity: 2
-  pressureMultiplier: 100
+  pressureMultiplier: 1.25
 --- !u!114 &417139567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,15 +262,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
   mass: 1
-  smoothRadius: 1.25
+  smoothRadius: 0.25
   collisionDamping: 0.9
-  particleSize: 0.125
-  gravity: 10
-  numParticles: 100
-  particleSpacing: 0.25
-  boundSize: {x: 16, y: 9}
-  targetDensity: 2
-  pressureMultiplier: 100
+  particleSize: 0.025
+  gravity: 0
+  numParticles: 1024
+  particleSpacing: 0.125
+  boundSize: {x: 9, y: 9}
+  targetDensity: 0.05
+  pressureMultiplier: 2
+  startIndices: 
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0

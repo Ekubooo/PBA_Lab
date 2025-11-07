@@ -12,8 +12,23 @@ namespace PBA.Fluid2D.Helper
 {
     public class SpatialHash
     {
+        public struct Entry
+        {
+            public int index;
+            public uint cellKey;
+            public int PIndex;
+            public Entry(int index, uint cellKey)
+            {
+                this.index = index;
+                this.cellKey = cellKey;
+                this.PIndex = -1;
+            }
+        }
+        
         public Vector2[] points;
         public float radius;
+        public Entry[] spatialLookup;
+        
         
         // public void USpatialLookup(Vector2[] points, float radius)
         // {
