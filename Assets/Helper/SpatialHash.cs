@@ -10,25 +10,35 @@ using static UnityEngine.Mathf;
 
 namespace PBA.Fluid2D.Helper
 {
+    public struct Entry
+    {
+        public int index;
+        public uint cellKey;
+        public int PIndex;
+        public Entry(int index, uint cellKey)
+        {
+            this.index = index;
+            this.cellKey = cellKey;
+            this.PIndex = -1;
+        }
+    }
     public class SpatialHash
     {
-        public struct Entry
-        {
-            public int index;
-            public uint cellKey;
-            public int PIndex;
-            public Entry(int index, uint cellKey)
-            {
-                this.index = index;
-                this.cellKey = cellKey;
-                this.PIndex = -1;
-            }
-        }
+        // public struct Entry
+        // {
+        //     public int index;
+        //     public uint cellKey;
+        //     public int PIndex;
+        //     public Entry(int index, uint cellKey)
+        //     {
+        //         this.index = index;
+        //         this.cellKey = cellKey;
+        //         this.PIndex = -1;
+        //     }
+        // }
         
         public Vector2[] points;
         public float radius;
-        public Entry[] spatialLookup;
-        
         
         // public void USpatialLookup(Vector2[] points, float radius)
         // {
@@ -38,8 +48,9 @@ namespace PBA.Fluid2D.Helper
         //     // create Spatial Lookup
         //     Parallel.For(0, points.Length, i =>
         //     {
-        //         (int cellX, int cellY) = position2CellCord(points[i], radius);
+        //         (int cellX, int cellY) = Pos2CellCord(points[i], radius);
         //         uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
+        //         // spatialLookup[i] = new SpatialHash.Entry(i, cellKey);
         //         spatialLookup[i] = new Entry(i, cellKey);
         //         startIndices[i] = int.MaxValue; // Reset start index
         //     });
@@ -47,7 +58,7 @@ namespace PBA.Fluid2D.Helper
         //     // sort
         //     Array.Sort(spatialLookup);
         //
-        //     // calculater start index ...
+        //     // calculater start index
         //     Parallel.For(0, points.Length, i =>
         //     {
         //         uint key = spatialLookup[i].cellKey;

@@ -14,7 +14,7 @@ using Random = System.Random;
 
 namespace PBA.Fluid2D.Main
 {
-    public class Fluid2D_4 : MonoBehaviour
+    public class Fluid2D_5 : MonoBehaviour
     {
         [SerializeField] Transform pointPrefab;
         Transform[] myPartical;
@@ -229,79 +229,7 @@ namespace PBA.Fluid2D.Main
             float PB = Density2Pressure(DensityB);
             return (PA + PB) / 2;
         }
-
-        public void USpatialLookup(Vector2[] points, float radius)
-        {
-            this.points = points;
-            this.radius = radius;
-
-            // create Spatial Lookup
-            Parallel.For(0, points.Length, i =>
-            {
-                (int cellX, int cellY) = Pos2CellCord(points[i], radius);
-                uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
-                // spatialLookup[i] = new SpatialHash.Entry(i, cellKey);
-                spatialLookup[i] = new Entry(i, cellKey);
-                startIndices[i] = int.MaxValue; // Reset start index
-            });
-
-            // sort
-            Array.Sort(spatialLookup);
-
-            // calculater start index
-            Parallel.For(0, points.Length, i =>
-            {
-                uint key = spatialLookup[i].cellKey;
-                uint keyPrev = i == 0 ? uint.MaxValue : spatialLookup[i - 1].cellKey;
-                if (key != keyPrev) startIndices[key] = i;
-            });
-        }
-
-        public (int x, int y) Pos2CellCord(Vector2 point, float radius)
-        {
-            int cellX = (int)(point.x / radius);
-            int cellY = (int)(point.y / radius);
-            return (cellX, cellY);
-        }
-
-        public uint HashCell(int cellX, int cellY)
-        {
-            uint a = (uint)cellX * 15823;
-            uint b = (uint)cellY * 9737333;
-            return a + b;
-        }
-
-        public uint GetKeyFromHash(uint hash)
-        {
-            return hash /* % (uint)spatialLookup.Length*/;
-        }
-
-        public void ForeachPointInRadius(Vector2 samplPpoint)
-        {
-            (int centreX, int centreY) = Pos2CellCord(samplPpoint, radius);
-            float sqrRadius = radius * radius;
-    
-            // test 
-            (int, int)[] cellOffsets = new (int, int)[numParticles];
-            
-            foreach ((int offsetX, int offsetY) in cellOffsets)
-            {
-                uint key = GetKeyFromHash(HashCell(centreX + offsetX, centreY + offsetY));
-                int cellStartIndex = startIndices[key];
-                for (int i = cellStartIndex; i < spatialLookup.Length; i++)
-                {
-                    if (spatialLookup[i].cellKey == key) break;
-                    int PIndex = spatialLookup[i].PIndex;
-                    float sqrDst = (points[PIndex] - samplPpoint).sqrMagnitude;
-                    if (sqrDst <= sqrRadius)
-                    {
-                        // spatialLookup[i].cellKey = key;
-                        // if in the smoothing radius, do something
-                    }
-                    
-                }
-            }
-        }
+        
     }
 
 }

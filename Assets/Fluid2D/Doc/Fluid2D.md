@@ -18,3 +18,4 @@
 ## TODO
 - Damping: for Edge of box
 - Viscosity
+- Spatial Hash Apply.
