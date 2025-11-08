@@ -25,11 +25,12 @@ namespace PBA.Fluid2D.Main
             
         [SerializeField][Range(0.01f, 0.10f)] 
         float particleSize;
-        [SerializeField][Range(0.01f, 0.10f)] 
+        [SerializeField][Range(0.01f, 0.25f)] 
         float particleSpacing;
+        [SerializeField][Range(0.005f, 0.25f)] 
+        float smoothRadius;
         
         [SerializeField] float mass = 1;
-        [SerializeField] float smoothRadius = 2;
         [SerializeField] float collisionDamping;
         [SerializeField] float gravity;
 
@@ -224,7 +225,24 @@ namespace PBA.Fluid2D.Main
             float PB = Density2Pressure(DensityB);
             return (PA + PB) / 2;
         }
+
+        Vector2 Interaction(Vector2 inputPos, float radius, float strength, int PIndex)
+        {
+            Vector2 IForce = Vector2.zero;
+            Vector2 offset = inputPos - position[PIndex];
+            float sqrDst = Vector2.Dot(offset, offset);
+
+            if (sqrDst < radius * radius)
+            {
+                float dst = Sqrt(sqrDst);
+                Vector2 dir2InputPoint = dst 
+                    <= float.Epsilon ? Vector2.zero : offset / dst;
+                float centreT = 1 - dst / radius;
+                IForce += (dir2InputPoint * strength - velocity[PIndex]) * centreT;
+                
+            }
+            return IForce;
+        }
         
     }
-
 }
