@@ -6,11 +6,12 @@
     update()
         SimStep(deltaTime)
             UPDATE velocity by GRAVITY;
-            DENSITY PreCalculate;
-            PRESSURE Force and Acc;
+            INIT predictPos;
+            DENSITY PreCalculate by predictPos;
+            PRESSURE Force and Acc by predictPos;
             UPDATE velocity by PRESSURE;
             UPDATE position by velocity;
-            Collisions();
+            Collisions Handle;
         END SimStep();
         DRAW Particles;
     END update();
