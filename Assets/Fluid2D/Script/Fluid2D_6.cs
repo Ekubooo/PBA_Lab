@@ -14,20 +14,25 @@ using Random = System.Random;
 
 namespace PBA.Fluid2D.Main
 {
-    public class Fluid2D_4 : MonoBehaviour
+    public class Fluid2D_6 : MonoBehaviour
     {
         [SerializeField] Transform pointPrefab;
         Transform[] myPartical;
         SpriteRenderer[] r;
 
-        [SerializeField] float mass = 1;
-        [SerializeField] float smoothRadius = 2;
-        [SerializeField] float collisionDamping;
-        [SerializeField] float particleSize;
-        [SerializeField] float gravity;
         [SerializeField] int numParticles;
-        [SerializeField] float particleSpacing;
         [SerializeField] Vector2 boundSize;
+            
+        [SerializeField][Range(0.01f, 0.10f)] 
+        float particleSize;
+        [SerializeField][Range(0.01f, 0.25f)] 
+        float particleSpacing;
+        [SerializeField][Range(0.005f, 0.25f)] 
+        float smoothRadius;
+        
+        [SerializeField] float mass = 1;
+        [SerializeField] float collisionDamping;
+        [SerializeField] float gravity;
 
         [SerializeField] float targetDensity;
         [SerializeField] float pressureMultiplier;
@@ -40,14 +45,16 @@ namespace PBA.Fluid2D.Main
 
         // test for spatial hash //////////////////////////////////////////
         //public SpatialHash.Entry[] spatialLookup;
-        public Entry[] spatialLookup;
-        public int[] startIndices;
+        (int, int)[] SHOffsets;
+        Entry[] spatialLookup;
+        int[] startIndices;
         Vector2[] points;
         float radius;
-        
+        float timeStep = 1f / 60f;
         // end test ///////////////////////////////////////////////////////
 
-        Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
+        static Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
+        static Color Tomato = new Color(1f, 99f / 255f, 71f / 255f);
 
         void Start()
         {
@@ -57,12 +64,13 @@ namespace PBA.Fluid2D.Main
             velocity = new Vector2[numParticles];
             particleProperty = new Vector2[numParticles];
             densities = new float[numParticles];
-
+            
             // Test spatial hash
             spatialLookup = new Entry[numParticles];
             startIndices = new int[numParticles];
-            points = new Vector2[numParticles];
+            points = new Vector2[numParticles];     //?? 
 
+            // particles property
             myPartical = new Transform[numParticles];
             r = new SpriteRenderer[numParticles];
 
@@ -70,6 +78,13 @@ namespace PBA.Fluid2D.Main
             int partPerCol = (numParticles - 1) / partPerRow + 1;
             float spacing = particleSize * 2 + particleSpacing;
             float d = particleSize * 2f;
+            
+            SHOffsets = new (int, int)[9]
+            {
+                (-1, 1),  (0, 1),  (1, 1), 
+                (-1, 0),  (0, 0),  (1, 0),
+                (-1, -1), (0, -1), (1, -1)
+            };
 
             for (int i = 0; i < numParticles; i++)
             {
@@ -86,19 +101,20 @@ namespace PBA.Fluid2D.Main
                 
                 particleProperty[i] = Vector2.zero;
                 densities[i] = 0f;
-
+                
                 // Test spatial hash
                 spatialLookup[i].index = 0;
                 spatialLookup[i].cellKey = 0;
                 startIndices[i] = 0;
                 points[i] = Vector2.zero;
-
+                
             }
         }
 
         void Update()
         {
-            SimStep(Time.deltaTime);
+            // SimStep(Time.deltaTime);
+            SimStep();
             DrawPatricles();
         }
 
@@ -108,32 +124,34 @@ namespace PBA.Fluid2D.Main
             Gizmos.DrawWireCube(Vector2.zero, boundSize);
         }
 
-        void SimStep(float deltaTime)
+        void SimStep()
         {
             Parallel.For(0, numParticles, i =>
             {
-                velocity[i] += Vector2.down * gravity * deltaTime;
-                predictPos[i] = position[i] + velocity[i] * deltaTime;
+                velocity[i] += Vector2.down * gravity * timeStep;
+                predictPos[i] = position[i] + velocity[i] * timeStep;
             });
             
-            // USpatialLookup(predictPos, smoothRadius);
+            USpatialLookup(predictPos, smoothRadius);
             
             Parallel.For(0, numParticles, i =>
             {
                 // Using predictPos to calculate density
+                // TODO: change func into SH version
                 densities[i] = CDensity(predictPos[i]);
             });
             
             Parallel.For(0, numParticles, i =>
             {
+                // TODO: change func into SH version
                 Vector2 pressureForce = CPressureForce(i);
                 Vector2 pressureAcc = pressureForce / densities[i];
-                velocity[i] += pressureAcc * deltaTime; 
+                velocity[i] += pressureAcc * timeStep; 
             });
             
             Parallel.For(0, numParticles, i =>
             {
-                position[i] += velocity[i] * deltaTime;
+                position[i] += velocity[i] * timeStep;
                 ResolveCollisions(ref position[i], ref velocity[i]); 
             });
         }
@@ -141,7 +159,12 @@ namespace PBA.Fluid2D.Main
         void DrawPatricles()
         {
             for (int i = 0; i < numParticles; i++)
+            {
                 myPartical[i].position = position[i];
+                // 10 can set as paramart of SerializeField
+                float interpolatePara = InverseLerp(0.25f, 1.25f, velocity[i].magnitude);
+                r[i].color = Color.Lerp(skyBlue, Tomato, interpolatePara);
+            }
         }
 
         void ResolveCollisions(ref Vector2 position, ref Vector2 velocity)
@@ -230,8 +253,27 @@ namespace PBA.Fluid2D.Main
             return (PA + PB) / 2;
         }
 
+        Vector2 Interaction(Vector2 inputPos, float radius, float strength, int PIndex)
+        {
+            Vector2 IForce = Vector2.zero;
+            Vector2 offset = inputPos - position[PIndex];
+            float sqrDst = Vector2.Dot(offset, offset);
+
+            if (sqrDst < radius * radius)
+            {
+                float dst = Sqrt(sqrDst);
+                Vector2 dir2InputPoint = dst 
+                    <= float.Epsilon ? Vector2.zero : offset / dst;
+                float centreT = 1 - dst / radius;
+                IForce += (dir2InputPoint * strength - velocity[PIndex]) * centreT;
+                
+            }
+            return IForce;
+        }
+        
         public void USpatialLookup(Vector2[] points, float radius)
         {
+            // !! not right yet.
             this.points = points;
             this.radius = radius;
 
@@ -240,12 +282,11 @@ namespace PBA.Fluid2D.Main
             {
                 (int cellX, int cellY) = Pos2CellCord(points[i], radius);
                 uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
-                // spatialLookup[i] = new SpatialHash.Entry(i, cellKey);
                 spatialLookup[i] = new Entry(i, cellKey);
                 startIndices[i] = int.MaxValue; // Reset start index
             });
 
-            // sort
+            // sort by cellKey
             Array.Sort(spatialLookup);
 
             // calculater start index
@@ -277,14 +318,11 @@ namespace PBA.Fluid2D.Main
         }
 
         public void ForeachPointInRadius(Vector2 samplPpoint)
-        {
+        {   // Finding function
             (int centreX, int centreY) = Pos2CellCord(samplPpoint, radius);
             float sqrRadius = radius * radius;
-    
-            // test 
-            (int, int)[] cellOffsets = new (int, int)[numParticles];
             
-            foreach ((int offsetX, int offsetY) in cellOffsets)
+            foreach ((int offsetX, int offsetY) in SHOffsets)
             {
                 uint key = GetKeyFromHash(HashCell(centreX + offsetX, centreY + offsetY));
                 int cellStartIndex = startIndices[key];
@@ -294,15 +332,14 @@ namespace PBA.Fluid2D.Main
                     int PIndex = spatialLookup[i].index;
                     float sqrDst = (points[PIndex] - samplPpoint).sqrMagnitude;
                     if (sqrDst <= sqrRadius)
-                    {
+                    {   // if in the smoothing radius, do something
                         // spatialLookup[i].cellKey = key;
-                        // if in the smoothing radius, do something
                     }
                 }
                 
             }
         }
         
+        
     }
-
 }

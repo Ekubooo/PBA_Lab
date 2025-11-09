@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: 417139562}
   - component: {fileID: 417139564}
   - component: {fileID: 417139565}
-  - component: {fileID: 417139563}
   - component: {fileID: 417139566}
   - component: {fileID: 417139567}
   - component: {fileID: 417139568}
@@ -159,30 +158,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &417139563
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 417139561}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c02b2fa0c25a48e4693e65ff9acbaab9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
-  mass: 1
-  smoothRadius: 3
-  radius: 0
-  collisionDamping: 0.95
-  particleSize: 0.125
-  gravity: 0
-  numParticles: 225
-  particleSpacing: 0.1
-  boundSize: {x: 16, y: 9}
-  targetDensity: 5
-  pressureMultiplier: 0.025
 --- !u!114 &417139564
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -14,14 +14,18 @@ namespace PBA.Fluid2D.Helper
     {
         public int index;
         public uint cellKey;
-        public int PIndex;
         public Entry(int index, uint cellKey)
         {
             this.index = index;
             this.cellKey = cellKey;
-            this.PIndex = -1;
+        }
+        
+        public int CompareTo(Entry other)
+        {
+            return this.cellKey.CompareTo(other.cellKey);
         }
     }
+
     public class SpatialHash
     {
         // public struct Entry
@@ -36,9 +40,18 @@ namespace PBA.Fluid2D.Helper
         //         this.PIndex = -1;
         //     }
         // }
-        
+
         public Vector2[] points;
         public float radius;
+
+        // public (int, int)[] SHOffsets = new  (int, int)[9]
+        // {
+        //     (-1, 1),  (0, 1),  (1, 1), 
+        //     (-1, 0),  (0, 0),  (1, 0),
+        //     (-1, -1), (0, -1), (1, -1)
+        // };
+        
+        
         
         // public void USpatialLookup(Vector2[] points, float radius)
         // {
@@ -87,5 +100,6 @@ namespace PBA.Fluid2D.Helper
         }
         
     }
+    
 }
 
