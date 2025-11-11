@@ -5,16 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Doc/SH.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Doc/SH.md.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Doc/Fluid2D.md" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Doc/Fluid2D.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_4.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_4.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/PreFluid.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Helper/SpatialHash.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Helper/SpatialHash.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,7 +158,9 @@
       <workItem from="1762510767002" duration="5676000" />
       <workItem from="1762586073406" duration="796000" />
       <workItem from="1762586889296" duration="11468000" />
-      <workItem from="1762674873874" duration="9275000" />
+      <workItem from="1762674873874" duration="10778000" />
+      <workItem from="1762759013718" duration="10242000" />
+      <workItem from="1762775760328" duration="1990000" />
     </task>
     <servers />
   </component>
