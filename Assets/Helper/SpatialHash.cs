@@ -10,7 +10,7 @@ using static UnityEngine.Mathf;
 
 namespace PBA.Fluid2D.Helper
 {
-    public struct Entry
+    public struct Entry: IComparable<Entry>
     {
         public int index;
         public uint cellKey;
@@ -22,7 +22,7 @@ namespace PBA.Fluid2D.Helper
         
         public int CompareTo(Entry other)
         {
-            return this.cellKey.CompareTo(other.cellKey);
+            return cellKey.CompareTo(other.cellKey);
         }
     }
 

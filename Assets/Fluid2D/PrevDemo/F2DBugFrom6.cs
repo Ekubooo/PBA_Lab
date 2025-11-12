@@ -14,7 +14,7 @@ using Random = System.Random;
 
 namespace PBA.Fluid2D.Main
 {
-    public class Fluid2D_6 : MonoBehaviour
+    public class F2DBugFrom6 : MonoBehaviour
     {
         [SerializeField] Transform pointPrefab;
         Transform[] myPartical;
@@ -105,8 +105,7 @@ namespace PBA.Fluid2D.Main
                 densities[i] = 0f;
                 
                 // Test spatial hash
-                spatialLookup[i].index = 0;
-                spatialLookup[i].cellKey = 0;
+                spatialLookup[i] = new Entry(i,0);
                 startIndices[i] = 0;
                 points[i] = Vector2.zero;
                 
@@ -339,8 +338,8 @@ namespace PBA.Fluid2D.Main
         public void USpatialLookup(Vector2[] points, float radius)
         {
             // !! not right yet.
-            this.points = points;
-            this.radius = radius;
+            // this.points = points;
+            // this.radius = radius;
 
             // create Spatial Lookup
             Parallel.For(0, points.Length, i =>

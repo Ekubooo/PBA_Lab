@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Helper/SpatialHash.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Helper/SpatialHash.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,11 +36,13 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/cdbed702f7024c35b6300aee19c24e92177800/ea/db7cb94a/Vector2.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Assignment1/Script/Rigid_GPU.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/ErrorEffect/F2DBugFrom6.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_2.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_3.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_4.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_5.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_6.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_7.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Helper/SpatialHash.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
@@ -161,6 +165,7 @@
       <workItem from="1762674873874" duration="10778000" />
       <workItem from="1762759013718" duration="10242000" />
       <workItem from="1762775760328" duration="1990000" />
+      <workItem from="1762942363472" duration="5844000" />
     </task>
     <servers />
   </component>
