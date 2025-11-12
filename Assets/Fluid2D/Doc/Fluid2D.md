@@ -19,8 +19,7 @@
       ```
   
 ## TODO
-- Spatial Hash Apply.
-- Density and Pressure calculation can apply SH. 
 - Viscosity
-
+- SH now implement by callback func, try do it with simple array return. 
+- new presure func applying.
 - (SH) Size for (2 * numParticles) not Verify, TODO.

@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 417139567}
   - component: {fileID: 417139568}
   - component: {fileID: 417139569}
+  - component: {fileID: 417139570}
   m_Layer: 0
   m_Name: Fluid
   m_TagString: Untagged
@@ -279,7 +280,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417139561}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 14cdb95aa7543c34ab6b37fc4ef9bc10, type: 3}
   m_Name: 
@@ -296,6 +297,33 @@ MonoBehaviour:
   gravity: 0
   targetDensity: 5
   pressureMultiplier: 25
+--- !u!114 &417139570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 417139561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1133bbeff6f2b8b44bef18127aa0eccc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
+  numParticles: 3000
+  boundSize: {x: 16, y: 9}
+  particleSize: 0.05
+  particleSpacing: 0.05
+  smoothRadius: 0.35
+  viscosityStrength: 0.5
+  IRadius: 3
+  IStrength: 15
+  mass: 1
+  collisionDamping: 0.6
+  gravity: 10
+  targetDensity: 6
+  pressureMultiplier: 50
+  NPMultiplier: 0
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0

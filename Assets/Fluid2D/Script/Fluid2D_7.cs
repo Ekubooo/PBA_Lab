@@ -29,8 +29,12 @@ namespace PBA.Fluid2D.Main
         float particleSpacing;
         [SerializeField][Range(0.005f, 1.25f)] 
         float smoothRadius;
-        [SerializeField] [Range(0.005f, 0.25f)]
+        [SerializeField] [Range(0.125f, 1.25f)]
         private float viscosityStrength;
+        [SerializeField] [Range(1f, 3f)]
+        float IRadius = 2f;
+        [SerializeField] [Range(5f, 15f)]
+        float IStrength = 2f;
         
         [SerializeField] float mass = 1;
         [SerializeField] float collisionDamping;
@@ -38,12 +42,17 @@ namespace PBA.Fluid2D.Main
 
         [SerializeField] float targetDensity;
         [SerializeField] float pressureMultiplier;
+        [SerializeField] float NPMultiplier;
+
         
         Vector2[] position;
         Vector2[] predictPos;
         Vector2[] velocity;
         Vector2[] particleProperty;
         float[] densities;
+
+        bool isMouseHitLeft;
+        bool isMouseHitRight;
 
         // test for spatial hash //////////////////////////////////////////
         //public SpatialHash.Entry[] spatialLookup;
@@ -52,7 +61,7 @@ namespace PBA.Fluid2D.Main
         int[]        startIndices;
         // Vector2[]    points;        // ?
         // float        radius;
-        float        timeStep = 1f / 60f;
+        float        timeStep = 1f / 90f;
         // end test ///////////////////////////////////////////////////////
 
         static Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
@@ -78,7 +87,7 @@ namespace PBA.Fluid2D.Main
 
             int partPerRow = (int)math.sqrt(numParticles);
             int partPerCol = (numParticles - 1) / partPerRow + 1;
-            float spacing = particleSize * 2 + particleSpacing;
+            float spacing = Min(particleSize,0.05f) * 2 + particleSpacing;
             float d = particleSize * 2f;
             
             SHOffsets = new (int, int)[9]
@@ -123,18 +132,35 @@ namespace PBA.Fluid2D.Main
         {
             Gizmos.color = Color.green;
             Gizmos.DrawWireCube(Vector2.zero, boundSize);
+            // Gizmos.DrawSphere(Input.mousePosition, IRadius);
         }
 
         void SimStep()
         {
+            Vector2 Fource = Vector2.down * gravity;
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 MPos = new Vector2(mousePos.x, mousePos.y);
+            // isMouseHitLeft = isMouseHitRight = false;
+            isMouseHitLeft  = Input.GetMouseButton(0);
+            isMouseHitRight = Input.GetMouseButton(1);
+            
             Parallel.For(0, numParticles, i =>
             {
-                velocity[i] += Vector2.down * gravity * timeStep;
+                // velocity[i] += Vector2.down * gravity * timeStep;
+                if (isMouseHitRight)
+                {
+                    Fource += InteractionFource(MPos, IRadius, IStrength, i);
+                }
+                else if (isMouseHitLeft)
+                {
+                    Fource += InteractionFource(MPos, IRadius, -IStrength, i);
+                }
+                
+                velocity[i] += Fource * timeStep;
                 predictPos[i] = position[i] + velocity[i] * timeStep;
             });
             
             USpatialLookup(predictPos, smoothRadius);
-            // USpatialLookup2(predictPos, smoothRadius);
             
             Parallel.For(0, numParticles, i =>
             {
@@ -144,10 +170,21 @@ namespace PBA.Fluid2D.Main
             Parallel.For(0, numParticles, i =>
             {
                 Vector2 pressureForce = CPressureForceCB(i);
-                
+                if (densities[i] > 0.00001f)
+                {
                     Vector2 pressureAcc = pressureForce / densities[i];
-                    velocity[i] += pressureAcc * timeStep; 
-                
+                    velocity[i] += pressureAcc * timeStep;
+                }
+            });
+
+            Parallel.For(0, numParticles, i =>
+            {
+                Vector2 viscosityForce = CViscosityForce(i);
+                if (densities[i] > 0.00001f)
+                {
+                    Vector2 Acc = viscosityForce / densities[i];
+                    velocity[i] += Acc * timeStep;
+                }
             });
             
             Parallel.For(0, numParticles, i =>
@@ -206,61 +243,68 @@ namespace PBA.Fluid2D.Main
             float scale = 12 / (Pow(radius, 4) * PI);
             return (dst - radius) * scale;
         }
-
-        float CDensity(Vector2 samplePoint)
+        
+        public void USpatialLookup(Vector2[] points, float radius)
         {
-            float density = 0;
-            // Spatial Lookup ?
-            foreach (Vector2 pos in predictPos)
+            // !! not right yet.
+            // 
+
+            // create Spatial Lookup
+            Parallel.For(0, points.Length, i =>
             {
-                float dst = (pos - samplePoint).magnitude;
-                float influence = SmoothingKernel(dst, smoothRadius);
-                density += mass * influence;
+                (int cellX, int cellY) = Pos2CellCord(points[i], radius);
+                uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
+                spatialLookup[i] = new Entry(i, cellKey);
+                startIndices[i] = int.MaxValue; // Reset start index
+            });
+
+            // sort by cellKey
+            Array.Sort(spatialLookup);
+
+            // calculater start index
+            Parallel.For(0, points.Length, i =>
+            {
+                uint key = spatialLookup[i].cellKey;
+                uint keyPrev = i == 0 ? uint.MaxValue : spatialLookup[i - 1].cellKey;
+                if (key != keyPrev) startIndices[key] = i;
+            });
+        }
+        
+        public void getNeighbor(Vector2 samplPpoint, System.Action<int> callback)
+        {   
+            (int centreX, int centreY) = Pos2CellCord(samplPpoint, smoothRadius);
+            float sqrRadius = smoothRadius * smoothRadius;
+            
+            foreach ((int offsetX, int offsetY) in SHOffsets)
+            {
+                // For all particles in 9 cells 
+                uint key = GetKeyFromHash(HashCell(centreX + offsetX, centreY + offsetY));
+                int cellStartIndex = startIndices[key];
+                for (int i = cellStartIndex; i < spatialLookup.Length; i++)
+                {   
+                    // For all particles in a cell
+                    if (spatialLookup[i].cellKey != key) break;    
+                    // out of current cell, break
+                        
+                    int PIndex = spatialLookup[i].index;
+                    float sqrDst = (predictPos[PIndex] - samplPpoint).sqrMagnitude;
+                    
+                    if (sqrDst <= sqrRadius) 
+                        callback(PIndex);
+                }
             }
-            return density;
         }
         
         float CDensityCB(Vector2 samplePoint)
         {
             float density = 0;
-
             getNeighbor(samplePoint, (int otherPIndex) =>
             {
                 density += DInfluence(samplePoint, otherPIndex);
             });
-
             return density;
         }
-
-        float DInfluence(Vector2 samplePoint, int neighborIndex)
-        {
-            float dst = (predictPos[neighborIndex] - samplePoint).magnitude;
-            float influence = SmoothingKernel(dst, smoothRadius);
-            return mass * influence;
-        }
-
-        Vector2 CPressureForce(int PIndex)
-        {
-            Vector2 PressureForce = Vector2.zero;
-            
-            for (int OIndex = 0; OIndex < numParticles; OIndex++)
-            {
-                if (PIndex == OIndex) continue;
-                // using predictPos (implicit method)
-                
-                // p + po = o, po = o - p
-                Vector2 offset = predictPos[OIndex] - predictPos[PIndex];
-
-                float dst = offset.magnitude;
-                Vector2 dir = dst == 0 ? GetRandomDir(PIndex) : offset.normalized; // / dst;
-                float slope = SmoothingKernelDericatve(dst, smoothRadius);
-                float density = densities[OIndex];
-                float sharePressure = CSharePressure(density, densities[PIndex]);
-                PressureForce += sharePressure * dir * slope * mass / density;
-            }
-            return PressureForce;
-        }
-
+        
         Vector2 CPressureForceCB(int PIndex)
         {
             Vector2 PressureForce = Vector2.zero;
@@ -272,6 +316,39 @@ namespace PBA.Fluid2D.Main
             return PressureForce;
         }
         
+        Vector2 CViscosityForce(int PIndex)
+        {
+            Vector2 viscosityForce = Vector2.zero;
+            Vector2 pos = position[PIndex];
+            // foreach (int OIndex in getNeighbor())
+            // {
+            //     float dst = (pos - position[OIndex]).magnitude;
+            //     float influence = VisSmoothKernel(dst, smoothRadius);
+            //     viscosityForce += (velocity[OIndex] - velocity[PIndex]) * influence;
+            // }
+            
+            getNeighbor(pos, (int OIndex) =>
+            {
+                viscosityForce += VInfluence(PIndex, OIndex);
+            });
+            
+            return viscosityForce * viscosityStrength;
+        }
+        
+        Vector2 VInfluence(int PIndex, int OIndex)
+        {
+            float dst = (position[PIndex] - position[OIndex]).magnitude;
+            float influence = VisSmoothKernel(dst, smoothRadius);
+            return (velocity[OIndex] - velocity[PIndex]) * influence;
+        }
+        
+        float DInfluence(Vector2 samplePoint, int neighborIndex)
+        {
+            float dst = (predictPos[neighborIndex] - samplePoint).magnitude;
+            float influence = SmoothingKernel(dst, smoothRadius);
+            return mass * influence;
+        }
+
         Vector2 PInfluence(int PIndex, int OIndex)
         {
             if (PIndex == OIndex) return Vector2.zero;
@@ -307,6 +384,14 @@ namespace PBA.Fluid2D.Main
             float pressure = densityError * pressureMultiplier;
             return pressure;
         }
+        
+        (float, float) CD2NP(float density, float nearDensity)
+        {
+            float densityError = density - targetDensity;
+            float pressure = densityError * pressureMultiplier;
+            float nearPressure = nearDensity * NPMultiplier;
+            return (pressure, nearPressure);
+        }
 
         float CSharePressure(float DensityA, float DensityB)
         {
@@ -314,74 +399,6 @@ namespace PBA.Fluid2D.Main
             float PB = Density2Pressure(DensityB);
             return (PA + PB) / 2;
         }
-
-        Vector2 Interaction(Vector2 inputPos, float radius, float strength, int PIndex)
-        {
-            Vector2 IForce = Vector2.zero;
-            Vector2 offset = inputPos - position[PIndex];
-            float sqrDst = Vector2.Dot(offset, offset);
-
-            if (sqrDst < radius * radius)
-            {
-                float dst = Sqrt(sqrDst);
-                Vector2 dir2InputPoint = dst 
-                    <= float.Epsilon ? Vector2.zero : offset / dst;
-                float centreT = 1 - dst / radius;
-                IForce += (dir2InputPoint * strength - velocity[PIndex]) * centreT;
-                
-            }
-            return IForce;
-        }
-        
-        public void USpatialLookup(Vector2[] points, float radius)
-        {
-            // !! not right yet.
-            // 
-
-            // create Spatial Lookup
-            Parallel.For(0, points.Length, i =>
-            {
-                (int cellX, int cellY) = Pos2CellCord(points[i], radius);
-                uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
-                spatialLookup[i] = new Entry(i, cellKey);
-                startIndices[i] = int.MaxValue; // Reset start index
-            });
-
-            // sort by cellKey
-            Array.Sort(spatialLookup);
-
-            // calculater start index
-            Parallel.For(0, points.Length, i =>
-            {
-                uint key = spatialLookup[i].cellKey;
-                uint keyPrev = i == 0 ? uint.MaxValue : spatialLookup[i - 1].cellKey;
-                if (key != keyPrev) startIndices[key] = i;
-            });
-        }
-
-        public void USpatialLookup2(Vector2[] points, float radius)
-        {   
-            // create Spatial Lookup
-            Parallel.For(0, predictPos.Length, i =>
-            {
-                (int cellX, int cellY) = Pos2CellCord(predictPos[i], radius);
-                uint cellKey = GetKeyFromHash(HashCell(cellX, cellY));
-                spatialLookup[i] = new Entry(i, cellKey);
-                startIndices[i] = int.MaxValue; // Reset start index
-            });
-
-            // sort by cellKey
-            Array.Sort(spatialLookup);
-
-            // calculater start index
-            Parallel.For(0, points.Length, i =>
-            {
-                uint key = spatialLookup[i].cellKey;
-                uint keyPrev = i == 0 ? uint.MaxValue : spatialLookup[i - 1].cellKey;
-                if (key != keyPrev) startIndices[key] = i;
-            });
-        }
-        
         
         public (int x, int y) Pos2CellCord(Vector2 point, float radius)
         {
@@ -403,65 +420,24 @@ namespace PBA.Fluid2D.Main
         {
             return hash % (uint)spatialLookup.Length;
         }
-
-        public void ForeachPointInRadius(Vector2 samplPpoint)
-        {   // Prototype
-            // (int centreX, int centreY) = Pos2CellCord(samplPpoint, radius);
-            // float sqrRadius = radius * radius;
-            (int centreX, int centreY) = Pos2CellCord(samplPpoint, smoothRadius);
-            float sqrRadius = smoothRadius * smoothRadius;
-            
-            foreach ((int offsetX, int offsetY) in SHOffsets)
-            {
-                uint key = GetKeyFromHash(HashCell(centreX + offsetX, centreY + offsetY));
-                int cellStartIndex = startIndices[key];
-                for (int i = cellStartIndex; i < spatialLookup.Length; i++)
-                {
-                    if (spatialLookup[i].cellKey != key) break;
-                    int PIndex = spatialLookup[i].index;
-                    float sqrDst = (predictPos[PIndex] - samplPpoint).sqrMagnitude;
-                    if (sqrDst <= sqrRadius) ;
-                        // if in the smoothing radius, do something
-                        // spatialLookup[i].cellKey = key;
-                }
-            }
-        }
         
-        public void getNeighbor(Vector2 samplPpoint, System.Action<int> callback)
-        {   
-            (int centreX, int centreY) = Pos2CellCord(samplPpoint, smoothRadius);
-            float sqrRadius = smoothRadius * smoothRadius;
-            
-            foreach ((int offsetX, int offsetY) in SHOffsets)
-            {
-                // For all particles in 9 cells 
-                uint key = GetKeyFromHash(HashCell(centreX + offsetX, centreY + offsetY));
-                int cellStartIndex = startIndices[key];
-                for (int i = cellStartIndex; i < spatialLookup.Length; i++)
-                {   
-                    // For all particles in a cell
-                    if (spatialLookup[i].cellKey != key) break;     // out of cell, break
-                    int PIndex = spatialLookup[i].index;
-                    float sqrDst = (predictPos[PIndex] - samplPpoint).sqrMagnitude;
-                    
-                    if (sqrDst <= sqrRadius) 
-                        callback(PIndex);
-                }
-            }
-        }
-        
+        Vector2 InteractionFource(Vector2 inputPos, float radius, float strength, int PIndex)
+        {
+            Vector2 IForce = Vector2.zero;
+            Vector2 offset = inputPos - position[PIndex];
+            float sqrDst = Vector2.Dot(offset, offset);
 
-        // Vector2 CViscosityForce(int PIndex)
-        // {
-        //     Vector2 viscosityForce = Vector2.zero;
-        //     Vector2 pos = position[PIndex];
-        //     foreach (int OIndex in getNeighbor(pos))
-        //     {
-        //         float dst = (pos - position[OIndex]).magnitude;
-        //         float influence = VisSmoothKernel(dst, smoothRadius);
-        //         viscosityForce += (velocity[OIndex] - velocity[PIndex]) * influence;
-        //     }
-        //     return viscosityForce * viscosityStrength;
-        // }
+            if (sqrDst < radius * radius)
+            {
+                float dst = Sqrt(sqrDst);
+                Vector2 dir2InputPoint 
+                    = dst <= float.Epsilon ? Vector2.zero : offset / dst;
+                float centreT = 1 - dst / radius;
+                IForce += (dir2InputPoint * strength - velocity[PIndex]) * centreT;
+                
+            }
+            return IForce;
+        }
+
     }
 }
