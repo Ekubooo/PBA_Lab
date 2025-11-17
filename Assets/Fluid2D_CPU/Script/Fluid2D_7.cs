@@ -29,11 +29,11 @@ namespace PBA.Fluid2D.Main
         float particleSpacing;
         [SerializeField][Range(0.005f, 1.25f)] 
         float smoothRadius;
-        [SerializeField] [Range(0.125f, 1.25f)]
+        [SerializeField] [Range(0.05f, 1.25f)]
         private float viscosityStrength;
-        [SerializeField] [Range(1f, 3f)]
+        [SerializeField] [Range(2f, 5f)]
         float IRadius = 2f;
-        [SerializeField] [Range(5f, 15f)]
+        [SerializeField] [Range(10f, 50f)]
         float IStrength = 2f;
         
         [SerializeField] float mass = 1;
@@ -61,7 +61,7 @@ namespace PBA.Fluid2D.Main
         int[]        startIndices;
         // Vector2[]    points;        // ?
         // float        radius;
-        float        timeStep = 1f / 90f;
+        float        timeStep = 1f / 60f;
         // end test ///////////////////////////////////////////////////////
 
         static Color skyBlue = new Color(135f / 255f, 206f / 255f, 235f / 255f);
@@ -137,26 +137,25 @@ namespace PBA.Fluid2D.Main
 
         void SimStep()
         {
-            Vector2 Fource = Vector2.down * gravity;
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 MPos = new Vector2(mousePos.x, mousePos.y);
+            Vector2 MPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            // Vector2 MPos = new Vector2(mousePos.x, mousePos.y);
             // isMouseHitLeft = isMouseHitRight = false;
             isMouseHitLeft  = Input.GetMouseButton(0);
             isMouseHitRight = Input.GetMouseButton(1);
             
             Parallel.For(0, numParticles, i =>
             {
-                // velocity[i] += Vector2.down * gravity * timeStep;
+                Vector2 Force = Vector2.zero;
                 if (isMouseHitRight)
-                {
-                    Fource += InteractionFource(MPos, IRadius, IStrength, i);
-                }
+                    Force += InteractionFource(MPos, IRadius, IStrength, i);
                 else if (isMouseHitLeft)
-                {
-                    Fource += InteractionFource(MPos, IRadius, -IStrength, i);
-                }
-                
-                velocity[i] += Fource * timeStep;
+                    Force += InteractionFource(MPos, IRadius, -IStrength, i);
+                velocity[i] += Force * timeStep;
+            });
+            
+            Parallel.For(0, numParticles, i =>
+            {
+                velocity[i] += Vector2.down * gravity * timeStep;
                 predictPos[i] = position[i] + velocity[i] * timeStep;
             });
             
@@ -363,7 +362,10 @@ namespace PBA.Fluid2D.Main
 
             if (density_O == 0) return Vector2.zero;
 
-            float sharePressure = CSharePressure(density_O, density_P);
+            (float PA, float PB)  = CD2NP(density_P, density_O);
+            float sharePressure = (PA + PB) / 2;
+            
+            // float sharePressure = CSharePressure(density_O, density_P);
             Vector2 PInf = dir * sharePressure * slope * mass / density_O;
         
             return PInf;
@@ -430,8 +432,8 @@ namespace PBA.Fluid2D.Main
             if (sqrDst < radius * radius)
             {
                 float dst = Sqrt(sqrDst);
-                Vector2 dir2InputPoint 
-                    = dst <= float.Epsilon ? Vector2.zero : offset / dst;
+                Vector2 dir2InputPoint =
+                     dst <= float.Epsilon ? Vector2.zero : offset.normalized;
                 float centreT = 1 - dst / radius;
                 IForce += (dir2InputPoint * strength - velocity[PIndex]) * centreT;
                 

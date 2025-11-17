@@ -309,21 +309,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1133bbeff6f2b8b44bef18127aa0eccc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
-  numParticles: 3000
-  boundSize: {x: 16, y: 9}
-  particleSize: 0.05
+  pointPrefab: {fileID: 2639670255581268919, guid: ab39b940c47956b4ab070dae5d99e30d, type: 3}
+  numParticles: 1000
+  boundSize: {x: 15, y: 9}
+  particleSize: 0.075
   particleSpacing: 0.05
-  smoothRadius: 0.35
+  smoothRadius: 0.5
   viscosityStrength: 0.5
   IRadius: 3
-  IStrength: 15
+  IStrength: 35
   mass: 1
   collisionDamping: 0.6
-  gravity: 10
-  targetDensity: 6
-  pressureMultiplier: 50
-  NPMultiplier: 0
+  gravity: 0
+  targetDensity: 100
+  pressureMultiplier: 200
+  NPMultiplier: 5
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0
