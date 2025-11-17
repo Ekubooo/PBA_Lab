@@ -14,7 +14,7 @@ using Random = System.Random;
 
 namespace PBA.Fluid2D.Main
 {
-    public class Fluid2D_7 : MonoBehaviour
+    public class Fluid2D : MonoBehaviour
     {
         [SerializeField] Transform pointPrefab;
         Transform[] myPartical;
@@ -362,10 +362,10 @@ namespace PBA.Fluid2D.Main
 
             if (density_O == 0) return Vector2.zero;
 
-            (float PA, float PB)  = CD2NP(density_P, density_O);
-            float sharePressure = (PA + PB) / 2;
+            // (float PA, float PB)  = CD2NP(density_P, density_O);
+            // float sharePressure = (PA + PB) / 2;
             
-            // float sharePressure = CSharePressure(density_O, density_P);
+            float sharePressure = CSharePressure(density_O, density_P);
             Vector2 PInf = dir * sharePressure * slope * mass / density_O;
         
             return PInf;

@@ -310,20 +310,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 2639670255581268919, guid: ab39b940c47956b4ab070dae5d99e30d, type: 3}
-  numParticles: 1000
+  numParticles: 3600
   boundSize: {x: 15, y: 9}
-  particleSize: 0.075
+  particleSize: 0.125
   particleSpacing: 0.05
   smoothRadius: 0.5
-  viscosityStrength: 0.5
+  viscosityStrength: 0.65
   IRadius: 3
-  IStrength: 35
+  IStrength: 50
   mass: 1
   collisionDamping: 0.6
-  gravity: 0
-  targetDensity: 100
-  pressureMultiplier: 200
-  NPMultiplier: 5
+  gravity: 12
+  targetDensity: 75
+  pressureMultiplier: 100
+  NPMultiplier: 2.5
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0
@@ -416,9 +416,69 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1171173686
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1171173687}
+  - component: {fileID: 1171173688}
+  m_Layer: 0
+  m_Name: FluidDemo
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1171173687
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1171173686}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1171173688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1171173686}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1133bbeff6f2b8b44bef18127aa0eccc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointPrefab: {fileID: 2639670255581268919, guid: ab39b940c47956b4ab070dae5d99e30d, type: 3}
+  numParticles: 3600
+  boundSize: {x: 15, y: 9}
+  particleSize: 0.035
+  particleSpacing: 0.05
+  smoothRadius: 0.35
+  viscosityStrength: 0.5
+  IRadius: 2.5
+  IStrength: 50
+  mass: 3
+  collisionDamping: 0.9
+  gravity: 0
+  targetDensity: 5
+  pressureMultiplier: 50
+  NPMultiplier: 2.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 793713037}
   - {fileID: 417139562}
+  - {fileID: 1171173687}

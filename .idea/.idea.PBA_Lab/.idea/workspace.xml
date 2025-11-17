@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Assets/Fluid2D_1.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_7.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D/Script/Fluid2D_7.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Assets/Fluid2D_1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Assets/Fluid2D_1.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Script/Fluid2D_7.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Script/Fluid2D.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Script/Fluid2D_7.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D_CPU/Script/Fluid2D.cs.meta" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,7 +167,7 @@
       <workItem from="1762775760328" duration="1990000" />
       <workItem from="1762942363472" duration="12554000" />
       <workItem from="1762957003251" duration="2146000" />
-      <workItem from="1763356166843" duration="3769000" />
+      <workItem from="1763356166843" duration="6023000" />
     </task>
     <servers />
   </component>
