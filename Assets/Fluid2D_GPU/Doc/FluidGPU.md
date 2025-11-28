@@ -1,6 +1,9 @@
-## Overall Process
-- Demo process of SPH
-    
+## SPH 2D
+- TODO: 
+    - how compute shader works? compute pipeline.
+    - rendering part.
+
+- Overall process of SPH
     ```
     Start()/Init()
         ComputeHelper.SetBuffer();
@@ -13,16 +16,7 @@
   
                 RunSimStep()
                     externalForces.Kernel;
-  
-                    RunSpatial()
-                        spatialHash.Kernel;
-                        spatialHash.Run()
-                            gpuSort.Run();
-                            spatialOffsetsCalc.Run();
-                        reorder.Kernel;
-                        copyback.Kernel;
-                    END RunSpatial();
-  
+                    RunSpatial();   // Process
                     density.Kernel;
                     pressure.Kernel;
                     viscosity.Kernel;
@@ -37,3 +31,33 @@
         HandleInput();
     END Update();
     ```
+
+- spatialHash process
+    ```
+    RunSpatial()
+        UpdateSpatialHash.Kernel;
+
+        spatialHash.Run()
+            gpuSort.Run() 
+                cs.SetBuffer();
+                ClearCounts.Kernel;
+                Count.Kernel;
+
+                scan.Run();
+
+                ScatterOutputs.Kernel;
+                CopyBack.Kernel;
+            END gpuSort.Run()
+
+            spatialOffsetsCalc.Run()
+                init?.Kernel;
+                offsets.Kernel;
+            END spatialOffsetsCalc.Run();
+        END spatialHash.Run();
+
+        reorder.Kernel;
+        copyback.Kernel;
+    END RunSpatial();
+      
+      ```
+
