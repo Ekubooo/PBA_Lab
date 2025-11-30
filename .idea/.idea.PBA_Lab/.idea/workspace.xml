@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="" />
+    <list default="true" id="ddf31c54-970c-4b55-890d-06cc5fbfa32e" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PBA_Lab/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Fluid2D_GPU/0_Doc/FluidGPU.md" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Fluid2D_GPU/0_Doc/FluidGPU.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -168,6 +171,8 @@
       <workItem from="1764237660713" duration="1380000" />
       <workItem from="1764325499457" duration="2032000" />
       <workItem from="1764397554585" duration="5000" />
+      <workItem from="1764402611679" duration="2489000" />
+      <workItem from="1764480259990" duration="1165000" />
     </task>
     <task id="LOCAL-00001" summary="update doc">
       <option name="closed" value="true" />

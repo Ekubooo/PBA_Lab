@@ -1,7 +1,9 @@
 ## SPH 2D
 - TODO: 
-    - how compute shader works? compute pipeline.
     - rendering part.
+    - Bitonic sort CS impl reading.
+    - recap of 5440 Radix and counting?
+    - GPU Radix.
 
 - Overall process of SPH
     ```
