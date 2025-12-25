@@ -43,6 +43,11 @@ namespace PBA.Fluid2D.Main
         [SerializeField] float targetDensity;
         [SerializeField] float pressureMultiplier;
         [SerializeField] float NPMultiplier;
+        
+        [Header("Visualization")] 
+        [SerializeField] Gradient velocityColorMap; // 这就是你的 Colour Map
+        [SerializeField] float maxSpeedForColor = 2.0f; // 速度达到多少时显示 Gradient 最右侧的颜色
+
 
         
         Vector2[] position;
@@ -193,13 +198,27 @@ namespace PBA.Fluid2D.Main
             });
         }
 
-        void DrawPatricles()
+        void DrawPatricles2()
         {
             for (int i = 0; i < numParticles; i++)
             {
                 myPartical[i].position = position[i];
                 float interpolatePara = InverseLerp(0.25f, 1.25f, velocity[i].magnitude);
                 r[i].color = Color.Lerp(skyBlue, Tomato, interpolatePara);
+            }
+        }
+        
+        void DrawPatricles()
+        {
+            for (int i = 0; i < numParticles; i++)
+            {
+                myPartical[i].position = position[i];
+
+                float speed = velocity[i].magnitude;
+
+                float t = Mathf.Clamp01(speed / maxSpeedForColor);
+
+                r[i].color = velocityColorMap.Evaluate(t);
             }
         }
 

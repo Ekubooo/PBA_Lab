@@ -304,15 +304,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 417139561}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1133bbeff6f2b8b44bef18127aa0eccc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pointPrefab: {fileID: 2639670255581268919, guid: ab39b940c47956b4ab070dae5d99e30d, type: 3}
+  pointPrefab: {fileID: 1030508162288583946, guid: c5e507279d8155d42abe4d73dc32d1d2, type: 3}
   numParticles: 3600
   boundSize: {x: 15, y: 9}
-  particleSize: 0.125
+  particleSize: 0.15
   particleSpacing: 0.05
   smoothRadius: 0.5
   viscosityStrength: 0.65
@@ -320,10 +320,41 @@ MonoBehaviour:
   IStrength: 50
   mass: 1
   collisionDamping: 0.6
-  gravity: 12
+  gravity: 0
   targetDensity: 75
   pressureMultiplier: 100
   NPMultiplier: 2.5
+  velocityColorMap:
+    serializedVersion: 2
+    key0: {r: 0.105820596, g: 0.34020147, b: 0.7735849, a: 1}
+    key1: {r: 0.23082057, g: 0.7843372, b: 0.8584906, a: 1}
+    key2: {r: 1, g: 0.9309917, b: 0, a: 0}
+    key3: {r: 0.96862745, g: 0.28555763, b: 0.031372573, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 4064
+    ctime1: 25571
+    ctime2: 37594
+    ctime3: 65535
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 2
+    m_ColorSpace: -1
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
+  maxSpeedForColor: 2
 --- !u!1 &793713034
 GameObject:
   m_ObjectHideFlags: 0
@@ -384,7 +415,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -455,7 +486,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1171173686}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1133bbeff6f2b8b44bef18127aa0eccc, type: 3}
   m_Name: 
@@ -463,7 +494,7 @@ MonoBehaviour:
   pointPrefab: {fileID: 2639670255581268919, guid: ab39b940c47956b4ab070dae5d99e30d, type: 3}
   numParticles: 3600
   boundSize: {x: 15, y: 9}
-  particleSize: 0.035
+  particleSize: 0.05
   particleSpacing: 0.05
   smoothRadius: 0.35
   viscosityStrength: 0.5
@@ -475,6 +506,37 @@ MonoBehaviour:
   targetDensity: 5
   pressureMultiplier: 50
   NPMultiplier: 2.5
+  velocityColorMap:
+    serializedVersion: 2
+    key0: {r: 0.105820596, g: 0.34020147, b: 0.7735849, a: 1}
+    key1: {r: 0.23082057, g: 0.7843372, b: 0.8584906, a: 1}
+    key2: {r: 1, g: 0.9309917, b: 0, a: 0}
+    key3: {r: 0.96862745, g: 0.28555763, b: 0.031372573, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 4064
+    ctime1: 25571
+    ctime2: 37594
+    ctime3: 65535
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 2
+    m_ColorSpace: -1
+    m_NumColorKeys: 4
+    m_NumAlphaKeys: 2
+  maxSpeedForColor: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
