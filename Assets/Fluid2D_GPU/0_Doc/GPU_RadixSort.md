@@ -17,13 +17,30 @@
 ### GPU radix sort V2
 - (n bit version) in one pass (n = 4,8...)
 - total for 32/n passs if is uint
-    1. get input single bit
-    3. For i = 0 to 2^n -1
-    4.      For j = 0 to n-1
-    5.          bit[j] == i ? b[i][j] = 1 : b[i][j] = 0;
-    6.      For j = 0 to n-1
-    7.          F[i][j] = b[i][j].EScan();
-    8. For i = 0 to 2^n -1
-    4.      For j = 0 to n-1 : if b[i][j] == 1 
-    5.          Offset[j] = F[i][j] + (i-1<0 ? 0 : F[i-1][n-1].IScan());
-    6. bit.Scatter(Offset[]);
+    1.      get input single bit
+    2.      For i = 0 to 2^n -1
+    3.          For j = 0 to n-1
+    4.              bit[j] == i ? b[i][j] = 1 : b[i][j] = 0;
+    5.          For j = 0 to n-1
+    6.              F[i][j] = b[i][j].EScan();
+    7.      For i = 0 to 2^n -1
+    8.          For j = 0 to n-1 : if b[i][j] == 1 
+    9.           Offset[j] = F[i][j] + (i-1<0 ? 0 : F[i-1][n-1].IScan());
+    10.     bit.Scatter(Offset[]);
+
+### Example for 2-bit
+input : 1  3  2  6  5  4  7  4
+--------------------------------
+// bucket == 0
+b[0] =  0  0  1  1  0  1  0  1
+F[0] =  0  0  0  1  2  2  3  3
+
+// bucket == 1
+b[1] =  1  1  0  0  1  0  1  0
+F[1] =  0  1  2  2  2  3  3  4
+
+// offset 
+        4  5  0  1  6  2  7  3
+
+// result
+        2  6  4  4  1  3  5  7
