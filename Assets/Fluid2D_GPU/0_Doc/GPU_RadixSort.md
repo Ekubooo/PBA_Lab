@@ -28,7 +28,7 @@
     9.           Offset[j] = F[i][j] + (i-1<0 ? 0 : F[i-1][n-1].IScan());
     10.     bit.Scatter(Offset[]);
 
-### Example for 2-bit
+### 1-bit Example 
 input : 1  3  2  6  5  4  7  4
 --------------------------------
 // bucket == 0
@@ -44,3 +44,25 @@ F[1] =  0  1  2  2  2  3  3  4
 
 // result
         2  6  4  4  1  3  5  7
+
+### Counting sort Example (GPU)
+input : 1  3  2  6  5  4  7  4
+
+// Count
+index:  0  1  2  3  4  5  6  7
+count:  0  1  1  1  2  1  1  1
+
+// Scan: starting position
+count:  0  0  1  2  3  5  6  7      // IScan = 8
+
+// Scatter by key: address = count[key]++;
+Key:    Unknow but needed 
+
+address:0  2  1  6  5  3  7  3+1    
+address:0  2  1  6  5  3  7  4   
+input : 1  3  2  6  5  4  7  4
+    // InterlockedAdd(Counts[4]) = 3+1
+    // Counts[4] = 3    // after scan
+
+// Result: 
+count:  1  2  3  4  4  5  6  7

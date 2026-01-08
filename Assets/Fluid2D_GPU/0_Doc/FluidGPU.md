@@ -61,5 +61,37 @@
         copyback.Kernel;
     END RunSpatial();
       
-      ```
-  
+    ```
+
+- GPU sort process
+    ```
+    gpuSort.Run() 
+        cs.Set();
+        ClearCounts.Kernel;
+            Counts.INIT();
+            InputItems.INIT();
+        Count.Kernel;
+            InterlockedAdd(Counts[key], 1);
+        scan.Run();
+        ScatterOutputs.Kernel;
+            InterlockedAdd(Counts[key], 1, retIndex);   // conflicit avoid
+        CopyBack.Kernel;
+            InputItems.WRITE(SortedItems);
+            InputKeys.WRITE(SortedKeys);
+    END gpuSort.Run()
+    ```
+
+- Scan process
+    ```
+    scan()
+        Helper.LoadComputeShader();
+    scan.Run()
+        cs.Set();
+        BlockScan.Kernel;
+        if numGroups > 1    // Recursive Scan of different block
+            scan.Run(groupSumBuffer);
+            cs.Set();
+            BlockCombine.Kernel;
+        END if
+    END Run()
+    ```
