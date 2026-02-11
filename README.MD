@@ -35,3 +35,7 @@
 
 ![Image](https://github.com/user-attachments/assets/16f3561a-d36e-4a4c-88fc-6ea3125d22e0)
 ![Image](https://github.com/user-attachments/assets/83f3a0dc-b3ca-4ad9-a1d2-64964c490a4c)
+
+# SPH Base Fluid
+- 3600 particles run on cpu, for about 50FPS
+![Image](https://github.com/user-attachments/assets/3da7f41b-66bf-4637-9888-dddab98cc56a)
